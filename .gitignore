@@ -1,15 +1,51 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# ===========================
+# Android / Kotlin / Firebase
+# ===========================
+
+# Gradle
+.gradle/
+build/
+**/build/
+
+# Local configuration
 local.properties
+
+# IntelliJ / Android Studio
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Firebase
+app/google-services.json
+
+# Signing keys
+*.jks
+*.keystore
+
+# NDK / CMake / Native
+.cxx/
+.externalNativeBuild/
+
+# Generated files
+captures/
+output.json
+
+# Logs
+*.log
+
+# Mac / Windows
+.DS_Store
+Thumbs.db
+
+# Kotlin / Java build outputs
+*.class
+*.dex
+*.apk
+*.ap_
+*.aar
+*.aab
+
+# Misc
+*.orig
+*.tmp
