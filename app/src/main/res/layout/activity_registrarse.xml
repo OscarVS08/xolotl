@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/fondoPrincipal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.auth.RegistrarseActivity">
+
+    <!-- 🔶 Rectángulo amarillo con el título "Registro" -->
+    <FrameLayout
+        android:id="@+id/contenedorLogo"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginHorizontal="30dp"
+        android:background="@drawable/fondo_logo_circular">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Registro"
+                android:textSize="75sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black" />
+        </LinearLayout>
+    </FrameLayout>
+
+    <!-- 🔽 Formulario desplazable -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/contenedorLogo"
+        android:fillViewport="true"
+        android:layout_marginTop="1dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:layout_margin="24dp"
+            android:padding="20dp"
+            android:background="@drawable/rectangulosesion"
+            android:paddingBottom="60dp"
+            android:elevation="6dp">
+
+            <!-- ===== DATOS PERSONALES ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Datos personales"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/txtCurp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="CURP (18 caracteres)"
+                android:maxLength="18"
+                android:inputType="textCapCharacters"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="4dp" />
+
+            <!-- 🔗 Enlace a la página oficial de CURP -->
+            <TextView
+                android:id="@+id/txtOlvidasteCurp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="¿Olvidaste tu CURP?"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="@color/link_color"
+                android:layout_marginBottom="20dp"
+                android:paddingVertical="20dp"
+                android:paddingHorizontal="20dp"
+                android:autoLink="web"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <EditText
+                android:id="@+id/txtNombre"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nombre(s)"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtApellidoP"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Apellido paterno"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtApellidoM"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Apellido materno"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/txtTelefono"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Teléfono (10 dígitos)"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:digits="0123456789"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtTelefonoAlt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Teléfono alternativo (opcional)"
+                android:inputType="phone"
+                android:maxLength="10"
+                android:digits="0123456789"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp" />
+
+            <!-- ===== DATOS DE DIRECCIÓN ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Datos de residencia"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/txtCalle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Calle"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtNumero"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Número"
+                android:maxLength="10"
+                android:inputType="text"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtColonia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Colonia"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtAlcaldia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Alcaldía / Municipio"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtCodigoPostal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Código postal (5 dígitos)"
+                android:inputType="number"
+                android:maxLength="5"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="20dp" />
+
+            <!-- ===== DATOS DE SEGURIDAD ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Datos de seguridad"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/txtCorreo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Correo electrónico"
+                android:inputType="textEmailAddress"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Contraseña"
+                android:inputType="textPassword"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:id="@+id/txtFortalezaContrasena"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Fortaleza: "
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginBottom="8dp" />
+
+            <EditText
+                android:id="@+id/txtConfirmarContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Confirmar contraseña"
+                android:inputType="textPassword"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="24dp" />
+
+            <Button
+                android:id="@+id/btnCrearCuenta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Crear cuenta"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:backgroundTint="@color/botonIniciarSesion"
+                android:layout_marginTop="10dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="40dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="fondoPrincipal">#2C3E92</color>
+    <color name="botonIniciarSesion">#D3F2AC</color>
+    <color name="botonRegistrarse">#B781E3</color>
+    <color name="rectanguloInicioSesion">#0194DA</color>
+    <color name="rectanguloLogo">#F4C012</color>
+    <color name="enlace">#000000</color>
+    <color name="botonEmergencia">#FF3131</color>
+    <color name="link_color">#1976D2</color>
+
+</resources>

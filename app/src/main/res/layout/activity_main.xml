@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/fondoPrincipal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <!-- Texto de bienvenida -->
+    <TextView
+        android:id="@+id/txtTituloLogo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:text="Hola {Nombre de la persona}"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:textColor="@color/rectanguloLogo" />
+
+    <!-- Menú desplegable (inicialmente oculto) -->
+    <LinearLayout
+        android:id="@+id/layoutMenuOpciones"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/barraInferior"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="20dp"
+        android:orientation="vertical"
+        android:gravity="end"
+        android:visibility="gone"
+        android:background="@drawable/fondo_menu"
+        android:elevation="6dp"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/btnOpcion1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Perfil" />
+
+        <Button
+            android:id="@+id/btnOpcion2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Configuración" />
+
+        <Button
+            android:id="@+id/btnOpcion3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Historial" />
+
+        <Button
+            android:id="@+id/btnOpcion4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Ayuda" />
+
+        <Button
+            android:id="@+id/btnOpcion5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Cerrar sesión" />
+    </LinearLayout>
+
+    <!-- Barra inferior con los tres botones -->
+    <LinearLayout
+        android:id="@+id/barraInferior"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:weightSum="3"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="6dp"
+        android:layout_marginBottom="12dp">
+
+        <!-- Botón emergencia -->
+        <ImageButton
+            android:id="@+id/btnEmergencia"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="0.8"
+            android:layout_marginHorizontal="10dp"
+            android:background="@drawable/boton_emergencia"
+            android:src="@drawable/veinticuatrohoras"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true"
+            android:padding="1dp"
+            android:contentDescription="Botón de emergencia" />
+
+        <!-- Botón central (+) -->
+        <ImageButton
+            android:id="@+id/btnPrincipal"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="0.8"
+            android:layout_marginStart="75dp"
+            android:layout_marginEnd="75dp"
+            android:layout_marginHorizontal="1dp"
+            android:background="@drawable/boton_mas"
+            android:src="@drawable/signomas"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true"
+            android:padding="6dp"
+            android:contentDescription="Botón más" />
+
+        <!-- Botón menú hamburguesa -->
+        <ImageButton
+            android:id="@+id/btnMenu"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="0.8"
+            android:layout_marginHorizontal="1dp"
+            android:background="@drawable/boton_hamburguesa"
+            android:src="@drawable/hamburguesa"
+            android:scaleType="centerInside"
+            android:adjustViewBounds="true"
+            android:padding="6dp"
+            android:contentDescription="Botón de menú" />
+    </LinearLayout>
+
+</RelativeLayout>
