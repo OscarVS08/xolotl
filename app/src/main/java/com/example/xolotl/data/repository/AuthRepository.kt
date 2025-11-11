@@ -5,24 +5,38 @@ import com.example.xolotl.utils.EncryptionUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class AuthRepository {
+class AuthRepository(
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance(),
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance()
+) {
 
-    private val auth = FirebaseAuth.getInstance()
-    private val db = FirebaseFirestore.getInstance()
-
-    fun iniciarSesion(email: String, password: String) =
+    // Inicio de sesión
+    fun iniciarSesion(
+        email: String,
+        password: String,
+        callback: AuthCallback
+    ) {
         auth.signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener { callback.onSuccess() }
+            .addOnFailureListener { e ->
+                callback.onError(e.localizedMessage ?: "Error al iniciar sesión")
+            }
+    }
 
+    // Registro de usuario
     fun registrarUsuario(
         email: String,
         password: String,
         user: User,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        callback: AuthCallback
     ) {
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
-                val uid = result.user?.uid ?: return@addOnSuccessListener onError("No se obtuvo UID")
+                val uid = result.user?.uid
+                if (uid == null) {
+                    callback.onError("No se obtuvo UID del usuario")
+                    return@addOnSuccessListener
+                }
 
                 val encryptedData = hashMapOf(
                     "uid" to uid,
@@ -42,23 +56,27 @@ class AuthRepository {
 
                 db.collection("usuarios").document(uid)
                     .set(encryptedData)
-                    .addOnSuccessListener { onSuccess() }
-                    .addOnFailureListener { onError(it.localizedMessage ?: "Error al guardar datos") }
+                    .addOnSuccessListener { callback.onSuccess() }
+                    .addOnFailureListener { e ->
+                        callback.onError(e.localizedMessage ?: "Error al guardar datos")
+                    }
             }
-            .addOnFailureListener { onError(it.localizedMessage ?: "Error al registrar usuario") }
+            .addOnFailureListener { e ->
+                callback.onError(e.localizedMessage ?: "Error al registrar usuario")
+            }
     }
 
+    // Envío de correo de recuperación
     fun enviarCorreoRecuperacion(
         correo: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
+        callback: AuthCallback
     ) {
         auth.sendPasswordResetEmail(correo)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    onSuccess()
+                    callback.onSuccess()
                 } else {
-                    onError(task.exception?.message ?: "Error al enviar correo")
+                    callback.onError(task.exception?.message ?: "Error al enviar correo")
                 }
             }
     }

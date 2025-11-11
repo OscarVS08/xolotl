@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".ui.auth.RegistrarseActivity">
 
-    <!-- 🔶 Rectángulo amarillo con el título "Registro" -->
+    <!-- Rectángulo amarillo con el título "Registro" -->
     <FrameLayout
         android:id="@+id/contenedorLogo"
         android:layout_width="match_parent"
@@ -252,38 +252,65 @@
                 android:padding="12dp"
                 android:layout_marginBottom="8dp" />
 
-            <EditText
-                android:id="@+id/txtContrasena"
+            <!-- Contraseña con botón toggle -->
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Contraseña"
-                android:inputType="textPassword"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="4dp" />
+                android:layout_marginBottom="12dp">
 
-            <TextView
-                android:id="@+id/txtFortalezaContrasena"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Fortaleza: "
-                android:textSize="14sp"
-                android:textColor="@android:color/darker_gray"
-                android:layout_marginBottom="8dp" />
+                <EditText
+                    android:id="@+id/txtContrasena"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Contraseña"
+                    android:inputType="textPassword"
+                    android:textColor="@android:color/black"
+                    android:textColorHint="#757575"
+                    android:background="@drawable/campos_circulares"
+                    android:padding="12dp" />
 
-            <EditText
-                android:id="@+id/txtConfirmarContrasena"
+                <ImageButton
+                    android:id="@+id/btnToggleContrasena"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ojocontrasena"
+                    android:contentDescription="Mostrar/ocultar contraseña"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+            </RelativeLayout>
+            
+            <!-- Confirmar contraseña con botón toggle -->
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Confirmar contraseña"
-                android:inputType="textPassword"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="24dp">
+
+                <EditText
+                    android:id="@+id/txtConfirmarContrasena"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Confirmar contraseña"
+                    android:inputType="textPassword"
+                    android:textColor="@android:color/black"
+                    android:textColorHint="#757575"
+                    android:background="@drawable/campos_circulares"
+                    android:padding="12dp" />
+
+                <ImageButton
+                    android:id="@+id/btnToggleConfirmarContrasena"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:background="@android:color/transparent"
+                    android:src="@drawable/ojocontrasena"
+                    android:contentDescription="Mostrar/ocultar contraseña"
+                    android:scaleType="centerInside"
+                    android:padding="4dp" />
+            </RelativeLayout>
 
             <Button
                 android:id="@+id/btnCrearCuenta"
@@ -298,7 +325,6 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="40dp"/>
-
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

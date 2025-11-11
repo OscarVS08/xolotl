@@ -5,6 +5,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import androidx.appcompat.app.AppCompatActivity
 import com.example.xolotl.data.repository.AuthRepository
+import com.example.xolotl.data.repository.AuthCallback
 import com.example.xolotl.databinding.ActivityRestablecerContrasenaBinding
 import com.example.xolotl.utils.UiUtils
 import com.example.xolotl.utils.ValidationUtils
@@ -36,23 +37,21 @@ class RestablecerContrasenaActivity : AppCompatActivity() {
         binding.btnEnviarCorreo.setOnClickListener {
             val correo = binding.txtCorreo.text.toString().trim()
 
-            // Validación del correo
             if (!ValidationUtils.isValidEmail(correo)) {
                 UiUtils.showToast(this, "Por favor ingresa un correo válido")
                 return@setOnClickListener
             }
 
-            // Enviar correo de restablecimiento
-            authRepo.enviarCorreoRecuperacion(
-                correo,
-                onSuccess = {
-                    UiUtils.showToast(this, "Correo de restablecimiento enviado a $correo")
+            authRepo.enviarCorreoRecuperacion(correo, object : AuthCallback {
+                override fun onSuccess() {
+                    UiUtils.showToast(this@RestablecerContrasenaActivity, "Correo de restablecimiento enviado a $correo")
                     finish()
-                },
-                onError = {
-                    UiUtils.showToast(this, it)
                 }
-            )
+
+                override fun onError(errorMessage: String) {
+                    UiUtils.showToast(this@RestablecerContrasenaActivity, errorMessage)
+                }
+            })
         }
     }
 }

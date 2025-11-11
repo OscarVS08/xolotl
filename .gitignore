@@ -49,3 +49,7 @@ Thumbs.db
 # Misc
 *.orig
 *.tmp
+
+# Firebase config
+app/google-services.json
+
