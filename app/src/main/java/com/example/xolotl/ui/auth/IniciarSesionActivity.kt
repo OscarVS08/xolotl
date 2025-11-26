@@ -51,11 +51,13 @@ class IniciarSesionActivity : AppCompatActivity() {
                 val mensaje = when {
                     pass.isEmpty() -> null
                     pass.length < 6 -> "Muy corta"
-                    ValidationUtils.isStrongPassword(pass) -> "Fuerte 💪"
-                    else -> "Media ⚠️"
+                    ValidationUtils.isStrongPassword(pass) -> "Fuerte"
+                    else -> "Media"
                 }
                 binding.txtContrasena.updateTextColor(pass.length >= 6)
-                binding.txtContrasena.error = mensaje
+                //binding.txtContrasena.error = mensaje
+                binding.txtContrasena.error = null
+
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}

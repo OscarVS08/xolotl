@@ -40,6 +40,7 @@
         android:layout_marginTop="1dp">
 
         <LinearLayout
+            android:id="@+id/contenedorFormulario"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -47,7 +48,8 @@
             android:padding="20dp"
             android:background="@drawable/rectangulosesion"
             android:paddingBottom="60dp"
-            android:elevation="6dp">
+            android:elevation="6dp"
+            android:gravity="center_horizontal">
 
             <!-- ===== DATOS PERSONALES ===== -->
             <TextView
@@ -72,7 +74,6 @@
                 android:padding="12dp"
                 android:layout_marginBottom="4dp" />
 
-            <!-- 🔗 Enlace a la página oficial de CURP -->
             <TextView
                 android:id="@+id/txtOlvidasteCurp"
                 android:layout_width="wrap_content"
@@ -80,7 +81,7 @@
                 android:text="¿Olvidaste tu CURP?"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/link_color"
+                android:textColor="@color/black"
                 android:layout_marginBottom="20dp"
                 android:paddingVertical="20dp"
                 android:paddingHorizontal="20dp"
@@ -252,7 +253,7 @@
                 android:padding="12dp"
                 android:layout_marginBottom="8dp" />
 
-            <!-- Contraseña con botón toggle -->
+            <!-- Contraseña con toggle -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -281,8 +282,8 @@
                     android:scaleType="centerInside"
                     android:padding="4dp" />
             </RelativeLayout>
-            
-            <!-- Confirmar contraseña con botón toggle -->
+
+            <!-- Confirmar contraseña con toggle -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -312,6 +313,7 @@
                     android:padding="4dp" />
             </RelativeLayout>
 
+            <!-- BOTÓN CREAR CUENTA -->
             <Button
                 android:id="@+id/btnCrearCuenta"
                 android:layout_width="match_parent"
@@ -325,6 +327,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="40dp"/>
+
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

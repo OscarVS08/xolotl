@@ -5,11 +5,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.TextWatcher
+import android.text.style.ForegroundColorSpan
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.xolotl.MainActivity
+import com.example.xolotl.R
 import com.example.xolotl.data.models.User
 import com.example.xolotl.data.repository.AuthCallback
 import com.example.xolotl.data.repository.AuthRepository
@@ -23,8 +28,11 @@ class RegistrarseActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegistrarseBinding
     private val authRepo = AuthRepository()
-    private var mostrarPassword = false
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private var mostrarPassword = false
+    private var mostrarConfirmPassword = false
+    // Crear un Spannable para el mensaje
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,10 +145,17 @@ class RegistrarseActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 val pass = s.toString()
                 val mensaje = when {
-                    pass.length < 8 -> "Muy débil"
+                    pass.length < 8 -> "Al menos 8 caracteres, 1 mayúscula, número y carácter especial"
                     ValidationUtils.isStrongPassword(pass) -> "Fuerte"
                     else -> "Media"
                 }
+
+                // Crear Spannable para cambiar el color
+                val spannable = SpannableString(mensaje)
+                val color = ContextCompat.getColor(this@RegistrarseActivity, R.color.black) // o R.color.azul
+                spannable.setSpan(ForegroundColorSpan(color), 0, mensaje.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+                // Asignar al EditText
                 binding.txtContrasena.error = mensaje
                 binding.txtContrasena.updateTextColor(ValidationUtils.isStrongPassword(pass))
             }
@@ -148,6 +163,7 @@ class RegistrarseActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
+
 
         // --- CONFIRMAR CONTRASEÑA ---
         binding.txtConfirmarContrasena.addTextChangedListener(object : TextWatcher {
@@ -198,8 +214,17 @@ class RegistrarseActivity : AppCompatActivity() {
                 InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
 
             binding.txtContrasena.inputType = type
-            binding.txtConfirmarContrasena.inputType = type
             binding.txtContrasena.setSelection(binding.txtContrasena.text?.length ?: 0)
+        }
+
+        binding.btnToggleConfirmarContrasena.setOnClickListener {
+            mostrarConfirmPassword = !mostrarConfirmPassword
+            val type = if (mostrarConfirmPassword)
+                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            else
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+
+            binding.txtConfirmarContrasena.inputType = type
             binding.txtConfirmarContrasena.setSelection(binding.txtConfirmarContrasena.text?.length ?: 0)
         }
     }
