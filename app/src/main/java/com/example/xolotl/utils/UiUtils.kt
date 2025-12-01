@@ -73,4 +73,46 @@ object UiUtils {
             }
             .show()
     }
+
+    /**
+     * Muestra una alerta específica cuando el PDF de la mascota ha sido generado
+     * @param activity: Activity donde se mostrará el alert
+     * @param onConfirm: Acción al presionar "Aceptar"
+     */
+    fun mostrarAlertaPdfGenerado(
+        activity: Activity,
+        onConfirm: (() -> Unit)? = null
+    ) {
+        SweetAlertDialog(activity, SweetAlertDialog.SUCCESS_TYPE)
+            .setTitleText("PDF generado")
+            .setContentText("Carnet de la mascota generado exitosamente")
+            .setConfirmText("Aceptar")
+            .setConfirmClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onConfirm?.invoke()
+            }
+            .show()
+    }
+
+    /**
+     * Muestra una alerta cuando ocurre un error al generar el PDF
+     * @param activity: Activity donde se mostrará el alert
+     * @param onConfirm: Acción al presionar "Aceptar"
+     */
+    fun mostrarAlertaPdfError(
+        activity: Activity,
+        onConfirm: (() -> Unit)? = null
+    ) {
+        SweetAlertDialog(activity, SweetAlertDialog.ERROR_TYPE)
+            .setTitleText("Error")
+            .setContentText("No se pudo generar el PDF de la mascota")
+            .setConfirmText("Aceptar")
+            .setConfirmClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onConfirm?.invoke()
+            }
+            .show()
+    }
+
+
 }

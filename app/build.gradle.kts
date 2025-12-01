@@ -52,6 +52,8 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))
     implementation("com.google.firebase:firebase-analytics")
+    // Almacenamiento de fotos
+    implementation("com.google.firebase:firebase-storage:21.0.0")
     //Dependencia para Sweet Alert
     implementation("com.github.f0ris.sweetalert:library:1.6.2")
     //Dependencias de pruebas

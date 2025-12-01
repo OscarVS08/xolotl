@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="70dp"
-        android:text="Hola {Nombre de la persona}"
+        android:text="Hola"
         android:textSize="32sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -39,28 +39,28 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Perfil" />
+            android:text="Notificaciones" />
 
         <Button
             android:id="@+id/btnOpcion2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Configuración" />
+            android:text="Editar perfil" />
 
         <Button
             android:id="@+id/btnOpcion3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Historial" />
+            android:text="Clinicas en la zona" />
 
         <Button
             android:id="@+id/btnOpcion4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Ayuda" />
+            android:text="Editar mascotas" />
 
         <Button
             android:id="@+id/btnOpcion5"
@@ -68,6 +68,36 @@
             android:layout_height="wrap_content"
             style="@style/Widget.AppCompat.Button.Borderless"
             android:text="Cerrar sesión" />
+    </LinearLayout>
+
+    <!-- Menú para el botón central (+), inicialmente oculto -->
+    <LinearLayout
+        android:id="@+id/layoutMenuPrincipal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/barraInferior"
+        android:layout_centerHorizontal="true"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:background="@drawable/fondo_menu"
+        android:elevation="6dp"
+        android:padding="10dp">
+
+        <Button
+            android:id="@+id/btnCentralOpcion1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Agregar mascota"/>
+
+        <Button
+            android:id="@+id/btnCentralOpcion2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:text="Agendar cita" />
+
     </LinearLayout>
 
     <!-- Barra inferior con los tres botones -->
