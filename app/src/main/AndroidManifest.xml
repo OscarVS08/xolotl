@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- PERMISO PARA GOOGLE MAPS -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:name=".App"
         android:allowBackup="true"
@@ -13,6 +16,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Xolotl"
         tools:targetApi="31">
+
+        <!-- PARA MOSTRAR EL MAPA DE GOOGLE MAPS -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
+
         <activity
             android:name=".ui.auth.InicioActivity"
             android:exported="true">
@@ -34,16 +43,16 @@
         <!-- Pantalla de menu principal -->
         <activity android:name=".MainActivity" />
 
-        <!--Pantalla de registro de mascotas -->
+        <!-- Pantalla de registro de mascotas -->
         <activity android:name=".ui.main.mascota.AgregarMascotaActivity" />
 
-        <!--Pantalla de mascotas -->
+        <!-- Pantalla de mascotas -->
         <activity android:name=".ui.main.mascota.MascotasActivity" />
 
-        <!--Pantalla para generar PDF - -->
+        <!-- Pantalla para generar PDF -->
         <activity android:name=".ui.main.mascota.GenerarPdfActivity" />
 
-        <!-- Para la generación adecuada del PDF-->
+        <!-- Para la generación del PDF -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -53,6 +62,30 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/provider_paths" />
         </provider>
+
+        <!-- Pantalla para notificaciones -->
+        <activity android:name=".ui.main.usuario.NotificacionesActivity" />
+
+        <!-- Pantalla para editar el perfil del usuario -->
+        <activity android:name=".ui.main.usuario.EditarPerfilActivity" />
+
+        <!-- Pantalla para mostrar mapa interactivo -->
+        <activity android:name=".ui.main.usuario.mapas.VisualizarMapaActivity" />
+
+        <!-- Pantalla para mostrar mapa interactivo de urgencias -->
+        <activity android:name=".ui.main.usuario.mapas.VisualizarMapaUrgenciasActivity" />
+
+        <!-- Pantalla para editar mascotas -->
+        <activity android:name=".ui.main.mascota.EditarMascotasActivity" />
+
+        <!-- Pantalla para agregar desparasitaciones -->
+        <activity android:name=".ui.main.mascota.AgregarDesparasitacionesActivity" />
+
+        <!-- Pantalla para agregar vacunas -->
+        <activity android:name=".ui.main.mascota.AgregarVacunasActivity" />
+
+        <!-- Pantalla para agregar citas -->
+        <activity android:name=".ui.main.usuario.AgregarCitasActivity" />
 
     </application>
 </manifest>

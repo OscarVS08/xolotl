@@ -12,6 +12,6 @@ data class Mascotas(
     val raza: String = "",
     val especie: String = "",     // Perro / Gato
     val notas: String = "",
-    val urlFoto: String = "",     // URL que guardarás en Storage
+    val fotoBase64: String = "",   // AQUI se guarda la foto como STRING
     val idDueno: String = ""      // UID del usuario dueño
 )

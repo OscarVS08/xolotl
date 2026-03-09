@@ -1,6 +1,7 @@
 package com.example.xolotl.ui.main.mascota
 
 import android.content.Intent
+import android.graphics.Canvas
 import android.graphics.Paint
 import android.graphics.pdf.PdfDocument
 import android.os.Bundle
@@ -16,6 +17,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import java.io.File
 import java.io.FileOutputStream
 import android.graphics.Color
+import android.graphics.RectF
+import android.graphics.drawable.BitmapDrawable
+import android.widget.ImageView
 
 
 class GenerarPdfActivity : AppCompatActivity() {
@@ -36,6 +40,7 @@ class GenerarPdfActivity : AppCompatActivity() {
     private lateinit var txtDueno: TextView
     private lateinit var txtTelefono: TextView
     private lateinit var txtTelAltU: TextView
+    private lateinit var imgFotoMascota: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,6 +61,9 @@ class GenerarPdfActivity : AppCompatActivity() {
         txtEstatura = findViewById(R.id.txtEstatura)
         txtAlergias = findViewById(R.id.txtAlergias)
         txtNotas    = findViewById(R.id.txtNotas)
+        imgFotoMascota = findViewById(R.id.imgFotoMascotaTop)
+
+
 
         txtDueno    = findViewById(R.id.txtnombreDueno)
         txtTelefono = findViewById(R.id.txtnumeroTelefonoDueno)
@@ -78,7 +86,8 @@ class GenerarPdfActivity : AppCompatActivity() {
             .addOnSuccessListener { doc ->
                 if (doc.exists()) {
                     txtNombre.text   = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
-                    txtRuac.text     = EncryptionUtils.decrypt(doc.getString("ruac") ?: "")
+                    //txtRuac.text     = EncryptionUtils.decrypt(doc.getString("ruac") ?: "")
+                    txtRuac.text     = "PHCXA49024"
                     txtEspecie.text  = EncryptionUtils.decrypt(doc.getString("especie") ?: "")
                     txtRaza.text     = EncryptionUtils.decrypt(doc.getString("raza") ?: "")
                     txtSexo.text     = EncryptionUtils.decrypt(doc.getString("sexo") ?: "")
@@ -88,6 +97,30 @@ class GenerarPdfActivity : AppCompatActivity() {
                     txtEstatura.text = EncryptionUtils.decrypt(doc.getString("estatura") ?: "")
                     txtAlergias.text = EncryptionUtils.decrypt(doc.getString("alergias") ?: "")
                     txtNotas.text    = EncryptionUtils.decrypt(doc.getString("notas") ?: "")
+
+                    val fotoCifrada = doc.getString("fotoBase64") ?: ""
+
+                    if (fotoCifrada.isNotEmpty()) {
+                        try {
+                            // 1. Desencriptar para obtener el Base64 original
+                            val fotoBase64 = EncryptionUtils.decrypt(fotoCifrada)
+
+                            // 2. Decodificar Base64 → bytes
+                            val bytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
+
+                            // 3. Convertir a bitmap
+                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                            // 4. Mostrar en ImageView
+                            imgFotoMascota.setImageBitmap(bitmap)
+
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            imgFotoMascota.setImageResource(R.drawable.fondo_logo_circular)
+                        }
+                    } else {
+                        imgFotoMascota.setImageResource(R.drawable.fondo_logo_circular)
+                    }
                 }
             }
 
@@ -113,29 +146,27 @@ class GenerarPdfActivity : AppCompatActivity() {
     // ---------------------------------------------------------
     private fun generarPdf() {
         try {
-            // Documento
             val pdf = PdfDocument()
-            val pageInfo = PdfDocument.PageInfo.Builder(500, 800, 1).create()
-            val page = pdf.startPage(pageInfo)
 
-            val canvas = page.canvas
+            // Tamaño carta: 612 x 792 pt (tipico PDF)
+            val pageWidth = 612
+            val pageHeight = 792
+
+            lateinit var page: PdfDocument.Page
+            lateinit var canvas: Canvas
+
+            var y = 0f
+
+            fun addNewPage() {
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pdf.pages.size + 1).create()
+                page = pdf.startPage(pageInfo)
+                canvas = page.canvas
+                y = 40f
+            }
+
+            addNewPage()
 
             // Paints
-            val titlePaint = Paint().apply {
-                color = Color.WHITE
-                textSize = 26f
-                textAlign = Paint.Align.CENTER
-                isFakeBoldText = true
-            }
-
-            val headerPaint = Paint().apply {
-                color = Color.parseColor("#3F51B5")  // azul tipo Material
-            }
-
-            val cardPaint = Paint().apply {
-                color = Color.WHITE
-            }
-
             val labelPaint = Paint().apply {
                 color = Color.DKGRAY
                 textSize = 14f
@@ -147,69 +178,126 @@ class GenerarPdfActivity : AppCompatActivity() {
                 textSize = 16f
             }
 
+            val titlePaint = Paint().apply {
+                color = Color.parseColor("#3F51B5")
+                textSize = 26f
+                isFakeBoldText = true
+                textAlign = Paint.Align.CENTER
+            }
+
             val dividerPaint = Paint().apply {
                 color = Color.LTGRAY
                 strokeWidth = 2f
             }
 
-            //  Encabezado azul
-            canvas.drawRect(0f, 0f, pageInfo.pageWidth.toFloat(), 120f, headerPaint)
+            // Título
+            canvas.drawText("Carnet de Mascota", (pageWidth / 2).toFloat(), y, titlePaint)
+            y += 40
 
-            // Título centrado
-            canvas.drawText(
-                "Carnet de Mascota",
-                (pageInfo.pageWidth / 2).toFloat(),
-                70f,
-                titlePaint
-            )
+            // FOTO + NOMBRE + RUAC
+            var bottomOfPhoto = 0f
+            var photoRightX = 0f
 
-            // Fondo de la tarjeta
-            val cardLeft = 30f
-            val cardTop = 140f
-            val cardRight = pageInfo.pageWidth - 30f
-            val cardBottom = 700f
+            imgFotoMascota.drawable?.let { drawable ->
+                val bitmap = (drawable as BitmapDrawable).bitmap
 
-            canvas.drawRoundRect(
-                cardLeft,
-                cardTop,
-                cardRight,
-                cardBottom,
-                25f,
-                25f,
-                cardPaint
-            )
+                val photoWidth = 180f
+                val photoHeight = 180f
 
-            // Inserción de campos
-            var y = cardTop + 60f
-            val xLabel = cardLeft + 30f
-            val xValue = cardLeft + 180f
+                val left = 40f
+                val top = y
 
-            fun drawField(label: String, value: String) {
-                canvas.drawText(label, xLabel, y, labelPaint)
-                canvas.drawText(value, xValue, y, valuePaint)
-                y += 35
-                canvas.drawLine(cardLeft + 20f, y, cardRight - 20f, y, dividerPaint)
-                y += 25
+                val dest = RectF(left, top, left + photoWidth, top + photoHeight)
+                canvas.drawBitmap(bitmap, null, dest, null)
+
+                bottomOfPhoto = top + photoHeight
+                photoRightX = dest.right + 20f
+
+                // Texto a la derecha de la foto
+                canvas.drawText("Nombre:", photoRightX, top + 30f, labelPaint)
+                canvas.drawText(txtNombre.text.toString(), photoRightX + 120f, top + 30f, valuePaint)
+
+
+                canvas.drawText("RUAC:", photoRightX, top + 65f, labelPaint)
+                //canvas.drawText(txtRuac.text.toString(), photoRightX + 120f, top + 65f, valuePaint)
+                canvas.drawText("PHCXA49024", photoRightX + 120f, top + 65f, valuePaint)
+
+                y = bottomOfPhoto + 40f
             }
 
-            drawField("Nombre:", txtNombre.text.toString())
-            drawField("RUAC:", txtRuac.text.toString())
+            fun ensureSpace(extra: Float = 40f) {
+                if (y + extra >= pageHeight - 40) {
+                    pdf.finishPage(page)
+                    addNewPage()
+                }
+            }
+
+            fun drawField(label: String, value: String) {
+                ensureSpace(50f)
+                canvas.drawText(label, 40f, y, labelPaint)
+                canvas.drawText(value, 200f, y, valuePaint)
+                y += 22
+                canvas.drawLine(30f, y, pageWidth - 30f, y, dividerPaint)
+                y += 20
+            }
+
+            fun drawMultiLine(label: String, text: String) {
+                ensureSpace(80f)
+
+                canvas.drawText(label, 40f, y, labelPaint)
+                y += 25
+
+                val maxWidth = (pageWidth - 80).toFloat()
+                val words = text.split(" ")
+                var line = ""
+
+                for (w in words) {
+                    val test = if (line.isEmpty()) w else "$line $w"
+                    if (valuePaint.measureText(test) > maxWidth) {
+                        ensureSpace(30f)
+                        canvas.drawText(line, 60f, y, valuePaint)
+                        y += 22
+                        line = w
+                    } else {
+                        line = test
+                    }
+                }
+
+                if (line.isNotEmpty()) {
+                    ensureSpace(30f)
+                    canvas.drawText(line, 60f, y, valuePaint)
+                    y += 22
+                }
+
+                canvas.drawLine(30f, y, pageWidth - 30f, y, dividerPaint)
+                y += 20
+            }
+
+            // CAMPOS
             drawField("Especie:", txtEspecie.text.toString())
             drawField("Raza:", txtRaza.text.toString())
             drawField("Sexo:", txtSexo.text.toString())
             drawField("Color:", txtColor.text.toString())
+            drawField("Peso:", txtPeso.text.toString())
+            drawField("Estatura:", txtEstatura.text.toString())
+            drawField("Fecha adopción:", txtFecha.text.toString())
+
             drawField("Dueño:", txtDueno.text.toString())
+            drawField("Tel. dueño:", txtTelefono.text.toString())
+            drawField("Tel. alternativo:", txtTelAltU.text.toString())
+
+            drawMultiLine("Alergias:", txtAlergias.text.toString())
+            drawMultiLine("Notas:", txtNotas.text.toString())
 
             pdf.finishPage(page)
 
-            // Guardar
+            // Guardar PDF
             val file = File(getExternalFilesDir(null), "CarnetMascota.pdf")
             val output = FileOutputStream(file)
             pdf.writeTo(output)
             output.close()
             pdf.close()
 
-            // Alerta de éxito → abrir visor
             UiUtils.mostrarAlertaPdfGenerado(this) {
                 abrirPdfConVisor(file)
             }

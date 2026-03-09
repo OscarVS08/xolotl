@@ -47,7 +47,10 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    //Dependencias de Firebase
+    // Dependencia para Google Maps
+    implementation("com.google.android.gms:play-services-maps:18.2.0")
+
+    // Dependencias de Firebase
     implementation("com.google.firebase:firebase-firestore-ktx:25.1.0")
     implementation("com.google.firebase:firebase-auth-ktx:23.1.0")
     implementation(platform("com.google.firebase:firebase-bom:34.5.0"))

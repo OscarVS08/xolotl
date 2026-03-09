@@ -7,8 +7,15 @@ import androidx.appcompat.app.AppCompatActivity
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.xolotl.databinding.ActivityMainBinding
 import com.example.xolotl.ui.auth.InicioActivity
+import com.example.xolotl.ui.main.mascota.AgregarDesparasitacionesActivity
 import com.example.xolotl.ui.main.mascota.AgregarMascotaActivity
+import com.example.xolotl.ui.main.mascota.AgregarVacunasActivity
 import com.example.xolotl.ui.main.mascota.MascotasActivity
+import com.example.xolotl.ui.main.usuario.AgregarCitasActivity
+import com.example.xolotl.ui.main.usuario.EditarPerfilActivity
+import com.example.xolotl.ui.main.usuario.NotificacionesActivity
+import com.example.xolotl.ui.main.usuario.mapas.VisualizarMapaActivity
+import com.example.xolotl.ui.main.usuario.mapas.VisualizarMapaUrgenciasActivity
 import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -32,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         setupBotonesPrincipales()
         setupCerrarSesion()
         editarMascotas()
+        notificacionesUsuario()
+        editarPerfilUsuario()
+        mostrarMapaNoUrgencias()
     }
 
     // ========================
@@ -86,16 +96,77 @@ class MainActivity : AppCompatActivity() {
             // Ocultamos el menú para evitar overlays que causan crashes
             binding.layoutMenuPrincipal.visibility = View.GONE
 
+            val intent = Intent(this, AgregarDesparasitacionesActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Opción 2 → Ir a Agregar vacunas
+        binding.btnCentralOpcion2.setOnClickListener {
+            // Ocultamos el menú para evitar overlays que causan crashes
+            binding.layoutMenuPrincipal.visibility = View.GONE
+
+            val intent = Intent(this, AgregarVacunasActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Opción 3 → Ir a Agregar Mascota
+        binding.btnCentralOpcion3.setOnClickListener {
+            // Ocultamos el menú para evitar overlays que causan crashes
+            binding.layoutMenuPrincipal.visibility = View.GONE
+
             val intent = Intent(this, AgregarMascotaActivity::class.java)
+            startActivity(intent)
+        }
+
+        // Opción 4 → Ir a Agregar citas
+        binding.btnCentralOpcion4.setOnClickListener {
+            // Ocultamos el menú para evitar overlays que causan crashes
+            binding.layoutMenuPrincipal.visibility = View.GONE
+
+            val intent = Intent(this, AgregarCitasActivity::class.java)
             startActivity(intent)
         }
 
         // Botón emergencia
         binding.btnEmergencia.setOnClickListener {
-            UiUtils.showToast(this, "Botón de emergencia (sin funcionalidad aún)")
+            binding.layoutMenuOpciones.visibility = View.GONE
+            val intent = Intent(this, VisualizarMapaUrgenciasActivity::class.java)
+            startActivity(intent)
         }
     }
 
+    // ========================
+    // OPCIÓN 1 → NOTIFICACIONES
+    // ========================
+    private fun notificacionesUsuario(){
+        binding.btnOpcion1.setOnClickListener {
+            binding.layoutMenuOpciones.visibility = View.GONE
+            val intent = Intent(this, NotificacionesActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    // ========================
+    // OPCIÓN 2 → EDITAR PERFIL USUARIO
+    // ========================
+    private fun editarPerfilUsuario(){
+        binding.btnOpcion2.setOnClickListener {
+            binding.layoutMenuOpciones.visibility = View.GONE
+            val intent = Intent(this, EditarPerfilActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    // ========================
+    // OPCIÓN 3 → EDITAR PERFIL USUARIO
+    // ========================
+    private fun mostrarMapaNoUrgencias(){
+        binding.btnOpcion3.setOnClickListener {
+            binding.layoutMenuOpciones.visibility = View.GONE
+            val intent = Intent(this, VisualizarMapaActivity::class.java)
+            startActivity(intent)
+        }
+    }
 
     // ========================
     // OPCIÓN 4 → EDITAR MASCOTAS
@@ -109,7 +180,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ========================
-    // CERRAR SESIÓN
+    // OPCIÓN 5 -> CERRAR SESIÓN
     // ========================
     private fun setupCerrarSesion() {
         binding.btnOpcion5.setOnClickListener {

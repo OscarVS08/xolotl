@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
-    android:background="@color/fondoPrincipal"
+    android:background="@drawable/fondo_interfaz"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.auth.InicioActivity">
@@ -39,7 +39,7 @@
                 android:contentDescription="@string/app_name"
                 android:padding="5dp"
                 android:scaleType="centerInside"
-                android:src="@drawable/xolotl" />
+                android:src="@drawable/logo_monocromatico" />
 
         </LinearLayout>
     </FrameLayout>

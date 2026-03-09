@@ -232,6 +232,11 @@ class AgregarMascotaActivity : AppCompatActivity() {
             return
         }
 
+        if (imagenEnBase64 == null) {
+            UiUtils.showToast(this, "Debes seleccionar una foto de la mascota")
+            return
+        }
+
         val ruacM = repo.hashCode().toString() + System.currentTimeMillis()
         val idDueno = FirebaseAuth.getInstance().uid ?: return
         val db = com.google.firebase.firestore.FirebaseFirestore.getInstance()
@@ -249,6 +254,7 @@ class AgregarMascotaActivity : AppCompatActivity() {
             estatura = EncryptionUtils.encrypt(binding.txtEstatura.text.toString()),
             alergias = EncryptionUtils.encrypt(binding.txtAlergias.text.toString()),
             notas = EncryptionUtils.encrypt(binding.txtNotas.text.toString()),
+            fotoBase64 = EncryptionUtils.encrypt(imagenEnBase64!!),
             idDueno = idDueno // UID del usuario, no es necesario cifrarlo
         )
 

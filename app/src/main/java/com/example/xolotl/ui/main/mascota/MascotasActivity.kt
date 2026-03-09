@@ -81,11 +81,26 @@ class MascotasActivity : AppCompatActivity() {
         // Desencriptar los datos antes de mostrarlos
         txtNombre.text = EncryptionUtils.decrypt(mascota.nombre)
 
-        val fotoBase64 = mascota.urlFoto
-        if (!fotoBase64.isNullOrEmpty()) {
-            val bytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
-            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-            imgMascota.setImageBitmap(bitmap)
+        // FOTO EN BASE64 CIFRADA
+        val fotoCifrada = mascota.fotoBase64
+
+        if (fotoCifrada.isNotEmpty()) {
+            try {
+                // 1. Desencriptar
+                val fotoBase64 = EncryptionUtils.decrypt(fotoCifrada)
+
+                // 2. Decodificar Base64 → bytes
+                val bytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
+
+                // 3. Convertir a Bitmap
+                val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+
+                imgMascota.setImageBitmap(bitmap)
+
+            } catch (e: Exception) {
+                e.printStackTrace()
+                imgMascota.setImageResource(R.drawable.fondo_logo_circular)
+            }
         } else {
             imgMascota.setImageResource(R.drawable.fondo_logo_circular)
         }
@@ -96,7 +111,15 @@ class MascotasActivity : AppCompatActivity() {
         }
 
         btnEditar.setOnClickListener {
-            // Abrir AgregarMascotaActivity en modo edición si quieres
+            val intent = Intent(this, EditarMascotasActivity::class.java)
+
+            // Enviar el ID de la mascota
+            intent.putExtra("docId", docId)
+
+            // Si quieres enviar datos de la mascota desencriptados, también puedes:
+            intent.putExtra("nombreMascota", EncryptionUtils.decrypt(mascota.nombre))
+
+            startActivity(intent)
         }
 
         btnPdf.setOnClickListener {
