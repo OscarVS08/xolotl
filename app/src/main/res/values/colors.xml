@@ -3,13 +3,14 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="fondoPrincipal">#2C3E92</color>
-    <color name="botonIniciarSesion">#D3F2AC</color>
-    <color name="botonRegistrarse">#B781E3</color>
-    <color name="rectanguloInicioSesion">#0194DA</color>
-    <color name="rectanguloLogo">#F4C012</color>
+    <color name="botonIniciarSesion">#5b35b1</color>
+    <color name="botonRegistrarse">#c6b7ec</color>
+    <color name="rectanguloInicioSesion">#5b35b1</color>
+    <color name="rectanguloLogo">#c6b7ec</color>
     <color name="enlace">#000000</color>
     <color name="botonEmergencia">#FF3131</color>
     <color name="link_color">#1976D2</color>
     <color name="verde">#4CAF50</color>
     <color name="azul">#2196F3</color>
+    <color name="colorTitulos">#2b2254</color>
 </resources>

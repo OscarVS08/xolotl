@@ -17,7 +17,7 @@
         android:textSize="32sp"
         android:textStyle="bold"
         android:gravity="center"
-        android:textColor="@color/rectanguloLogo" />
+        android:textColor="@color/colorTitulos" />
 
     <!-- Menú desplegable (inicialmente oculto) -->
     <LinearLayout
@@ -135,7 +135,7 @@
             android:layout_weight="0.8"
             android:layout_marginHorizontal="10dp"
             android:background="@drawable/boton_emergencia"
-            android:src="@drawable/veinticuatrohoras"
+            android:src="@drawable/mapa_blanco"
             android:scaleType="centerInside"
             android:adjustViewBounds="true"
             android:padding="1dp"
@@ -151,7 +151,7 @@
             android:layout_marginEnd="75dp"
             android:layout_marginHorizontal="1dp"
             android:background="@drawable/boton_mas"
-            android:src="@drawable/signomas"
+            android:src="@drawable/mas_morado"
             android:scaleType="centerInside"
             android:adjustViewBounds="true"
             android:padding="6dp"
@@ -165,7 +165,7 @@
             android:layout_weight="0.8"
             android:layout_marginHorizontal="1dp"
             android:background="@drawable/boton_hamburguesa"
-            android:src="@drawable/hamburguesa"
+            android:src="@drawable/menu_blanco"
             android:scaleType="centerInside"
             android:adjustViewBounds="true"
             android:padding="6dp"
