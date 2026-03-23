@@ -91,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                     View.GONE
         }
 
-        // Opción 1 → Ir a Agregar Mascota
+        // Opción 1 → Ir a Agregar desparasitaciones
         binding.btnCentralOpcion1.setOnClickListener {
             // Ocultamos el menú para evitar overlays que causan crashes
             binding.layoutMenuPrincipal.visibility = View.GONE

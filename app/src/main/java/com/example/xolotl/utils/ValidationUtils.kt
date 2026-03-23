@@ -139,4 +139,66 @@ object ValidationUtils {
                 && isValidAlergia(alergias)
                 && isValidNotas(notas)
     }
+
+    // -----------------------------
+    // VALIDACIONES DESPARASITACIÓN
+    // -----------------------------
+
+    fun isValidMetodo(metodo: String): Boolean {
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]{3,30}$")
+        return regex.matches(metodo)
+    }
+
+    fun isValidMedicamento(nombre: String): Boolean {
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{3,40}$")
+        return regex.matches(nombre)
+    }
+
+    fun isValidMarca(marca: String): Boolean {
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{2,30}$")
+        return regex.matches(marca)
+    }
+
+    fun isValidFechaDesparasitacion(fecha: String): Boolean {
+        val regex = Regex("^\\d{2}/\\d{2}/\\d{4}$")
+        return regex.matches(fecha)
+    }
+
+    fun isValidProximaFecha(fecha: String): Boolean {
+        if (fecha.isEmpty()) return true // opcional
+        val regex = Regex("^\\d{2}/\\d{2}/\\d{4}$")
+        return regex.matches(fecha)
+    }
+
+    fun isValidRuacMascota(ruac: String): Boolean {
+        return ruac.isNotBlank()
+    }
+
+    fun validarDesparasitacionCompleta(
+        metodo: String,
+        nombre: String,
+        marca: String,
+        fecha: String,
+        proximaFecha: String,
+        ruac: String
+    ): Boolean {
+
+        return isValidMetodo(metodo)
+                && isValidMedicamento(nombre)
+                && isValidMarca(marca)
+                && isValidFechaDesparasitacion(fecha)
+                && isValidProximaFecha(proximaFecha)
+                && isValidRuacMascota(ruac)
+    }
+
+    fun isFechaPosterior(fecha1: String, fecha2: String): Boolean {
+        return try {
+            val formato = java.text.SimpleDateFormat("dd/MM/yyyy")
+            val f1 = formato.parse(fecha1)
+            val f2 = formato.parse(fecha2)
+            f2.after(f1)
+        } catch (e: Exception) {
+            false
+        }
+    }
 }

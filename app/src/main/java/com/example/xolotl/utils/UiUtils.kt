@@ -114,5 +114,38 @@ object UiUtils {
             .show()
     }
 
+    fun mostrarConfirmacionDesparasitacion(
+        activity: Activity,
+        nombre: String,
+        marca: String,
+        fecha: String,
+        proximaFecha: String,
+        metodo: String,
+        onConfirm: (() -> Unit)? = null,
+        onCancel: (() -> Unit)? = null
+    ) {
 
+        val mensaje =
+            "Por favor corrobora los siguientes datos:\n\n" +
+                    "• Nombre: $nombre\n" +
+                    "• Marca: $marca\n" +
+                    "• Fecha: $fecha\n" +
+                    "• Próxima cita: $proximaFecha\n" +
+                    "• Método: $metodo"
+
+        SweetAlertDialog(activity, SweetAlertDialog.WARNING_TYPE)
+            .setTitleText("Confirmar registro")
+            .setContentText(mensaje)
+            .setConfirmText("Registrar")
+            .setCancelText("Cancelar")
+            .setConfirmClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onConfirm?.invoke()
+            }
+            .setCancelClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onCancel?.invoke()
+            }
+            .show()
+    }
 }
