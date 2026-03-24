@@ -201,4 +201,51 @@ object ValidationUtils {
             false
         }
     }
+
+    // -----------------------------
+// VALIDACIONES VACUNAS
+// -----------------------------
+
+    fun isValidVacunaNombre(nombre: String): Boolean {
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{3,40}$")
+        return regex.matches(nombre)
+    }
+
+    fun isValidVacunaMarca(marca: String): Boolean {
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{2,30}$")
+        return regex.matches(marca)
+    }
+
+    fun isValidDosis(dosis: String): Boolean {
+        val regex = Regex("^\\d{1,3}(\\.\\d{1,2})?$") // Ej: 1, 2.5, 10
+        return regex.matches(dosis)
+    }
+
+    fun isValidFechaVacuna(fecha: String): Boolean {
+        val regex = Regex("^\\d{2}/\\d{2}/\\d{4}$")
+        return regex.matches(fecha)
+    }
+
+    fun isValidProximaFechaVacuna(fecha: String): Boolean {
+        if (fecha.isEmpty()) return true // opcional
+        val regex = Regex("^\\d{2}/\\d{2}/\\d{4}$")
+        return regex.matches(fecha)
+    }
+
+    fun validarVacunaCompleta(
+        nombre: String,
+        marca: String,
+        dosis: String,
+        fecha: String,
+        proximaFecha: String,
+        ruac: String
+    ): Boolean {
+
+        return isValidVacunaNombre(nombre)
+                && isValidVacunaMarca(marca)
+                && isValidDosis(dosis)
+                && isValidFechaVacuna(fecha)
+                && isValidProximaFechaVacuna(proximaFecha)
+                && isValidRuacMascota(ruac)
+    }
 }
