@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- PERMISO PARA GOOGLE MAPS -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+
+    <application
+        android:name=".App"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Xolotl"
+        tools:targetApi="31">
+
+        <!-- PARA MOSTRAR EL MAPA DE GOOGLE MAPS -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key"/>
+
+        <activity
+            android:name=".ui.auth.InicioActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <!-- Pantalla de inicio de sesión -->
+        <activity android:name=".ui.auth.IniciarSesionActivity" />
+
+        <!-- Pantalla de registro -->
+        <activity android:name=".ui.auth.RegistrarseActivity" />
+
+        <!-- Pantalla de enviar correo para reestablecer contraseña -->
+        <activity android:name=".ui.auth.RestablecerContrasenaActivity" />
+
+        <!-- Pantalla de menu principal -->
+        <activity android:name=".MainActivity" />
+
+        <!-- Pantalla de registro de mascotas -->
+        <activity android:name=".ui.main.mascota.AgregarMascotaActivity" />
+
+        <!-- Pantalla de mascotas -->
+        <activity android:name=".ui.main.mascota.MascotasActivity" />
+
+        <!-- Pantalla para generar PDF -->
+        <activity android:name=".ui.main.mascota.GenerarPdfActivity" />
+
+        <!-- Para la generación del PDF -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+
+        <!-- Pantalla para notificaciones -->
+        <activity android:name=".ui.main.usuario.NotificacionesActivity" />
+
+        <!-- Pantalla para editar el perfil del usuario -->
+        <activity android:name=".ui.main.usuario.EditarPerfilActivity" />
+
+        <!-- Pantalla para mostrar mapa interactivo -->
+        <activity android:name=".ui.main.usuario.mapas.VisualizarMapaActivity" />
+
+        <!-- Pantalla para mostrar mapa interactivo de urgencias -->
+        <activity android:name=".ui.main.usuario.mapas.VisualizarMapaUrgenciasActivity" />
+
+        <!-- Pantalla para editar mascotas -->
+        <activity android:name=".ui.main.mascota.EditarMascotasActivity" />
+
+        <!-- Pantalla para agregar desparasitaciones -->
+        <activity android:name=".ui.main.mascota.AgregarDesparasitacionesActivity" />
+
+        <!-- Pantalla para agregar vacunas -->
+        <activity android:name=".ui.main.mascota.AgregarVacunasActivity" />
+
+        <!-- Pantalla para agregar citas -->
+        <activity android:name=".ui.main.usuario.AgregarCitasActivity" />
+
+    </application>
+</manifest>

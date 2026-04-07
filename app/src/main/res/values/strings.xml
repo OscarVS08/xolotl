@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">xolotl</string>
+    <string name="google_maps_key" translatable="false">
+        AIzaSyDkbSnZpSYLAiHlKHX0qiJr0-rX82n81x8
+    </string>
+</resources>

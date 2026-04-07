@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:background="@drawable/rectangulosesion"
+    android:padding="16dp"
+    android:layout_marginBottom="16dp">
+
+    <!-- Rectángulo amarillo para la foto -->
+    <FrameLayout
+        android:id="@+id/fotoContainer"
+        android:layout_width="80dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/fondo_logo_circular"
+        android:layout_alignParentStart="true">
+
+        <ImageView
+            android:id="@+id/imgMascota"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="Foto de la mascota"/>
+    </FrameLayout>
+
+    <!-- Nombre de la mascota -->
+    <TextView
+        android:id="@+id/txtNombreMascotaItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nombre Mascota"
+        android:textColor="@android:color/black"
+        android:textSize="25dp"
+        android:textStyle="bold"
+        android:layout_toEndOf="@id/fotoContainer"
+        android:layout_marginStart="30dp"
+        android:layout_alignTop="@id/fotoContainer"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Botones alineados horizontalmente -->
+    <LinearLayout
+        android:id="@+id/btnsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginEnd="75dp"
+        android:spacing="8dp"
+        >
+
+        <!-- Botón eliminar -->
+        <ImageButton
+            android:id="@+id/btnEliminarMascota"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/baseline_delete_24"
+            android:background="@android:color/transparent"
+            android:contentDescription="Eliminar mascota"
+            android:scaleType="fitCenter"/>
+
+        <!-- Botón editar -->
+        <ImageButton
+            android:id="@+id/btnEditarMascota"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/baseline_edit_24"
+            android:background="@android:color/transparent"
+            android:contentDescription="Editar mascota"
+            android:scaleType="fitCenter"/>
+
+        <!-- Botón generar PDF -->
+        <ImageButton
+            android:id="@+id/btnPdfMascota"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/baseline_picture_as_pdf_24"
+            android:background="@android:color/transparent"
+            android:contentDescription="Generar PDF de la mascota"
+            android:scaleType="fitCenter"/>
+    </LinearLayout>
+
+</RelativeLayout>

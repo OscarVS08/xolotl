@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/fondo_interfaz"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.main.mascota.MascotasActivity">
+
+    <!-- Botón Home -->
+    <FrameLayout
+        android:id="@+id/btnHomeContainer"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="30dp"
+        android:background="@drawable/fondo_morado_circular"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:layout_alignParentStart="true">
+
+        <ImageButton
+            android:id="@+id/btnHome"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:src="@drawable/home_morado"
+            android:contentDescription="Volver al inicio"
+            android:scaleType="centerCrop"/>
+    </FrameLayout>
+
+    <!-- Título -->
+    <TextView
+        android:id="@+id/txtTituloMascota"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Editar mascotas"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_toEndOf="@id/btnHomeContainer"/>
+
+    <!-- Contenedor dinámico de mascotas -->
+    <ScrollView
+        android:id="@+id/scrollMascotas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/txtTituloMascota"
+        android:layout_marginTop="20dp"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:id="@+id/containerMascotas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:clipToPadding="false"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="16dp"
+            android:contentDescription="Scroll mascotas"/>
+    </ScrollView>
+
+    <!-- Mensaje cuando no hay mascotas -->
+    <TextView
+        android:id="@+id/txtSinMascotas"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="No tienes mascotas aún"
+        android:textSize="18sp"
+        android:textColor="@android:color/white"
+        android:layout_centerInParent="true"
+        android:visibility="gone"/>
+</RelativeLayout>

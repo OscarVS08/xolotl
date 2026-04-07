@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/fondo_interfaz"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.main.mascota.AgregarMascotaActivity">
+
+    <FrameLayout
+        android:id="@+id/btnHomeContainer"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginStart="30dp"
+        android:background="@drawable/fondo_morado_circular"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
+        android:layout_alignParentStart="true">
+
+        <ImageButton
+            android:id="@+id/btnHome"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:src="@drawable/home_morado"
+            android:contentDescription="Volver al inicio"
+            android:scaleType="centerCrop"/>
+    </FrameLayout>
+
+    <!-- ====== TÍTULO ====== -->
+    <TextView
+        android:id="@+id/txtTituloMascota"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Agregar mascota"
+        android:textSize="30sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="50dp"
+        android:layout_toEndOf="@id/btnHomeContainer"/>
+
+    <!-- ===== Scroll con formulario ===== -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/txtTituloMascota"
+        android:layout_marginTop="10dp"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:layout_margin="24dp"
+            android:padding="20dp"
+            android:background="@drawable/rectangulosesion"
+            android:paddingBottom="60dp"
+            android:elevation="6dp">
+
+            <!-- ========== RUAC ========== -->
+            <EditText
+                android:id="@+id/txtRuac"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="RUAC"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Nombre ========== -->
+            <EditText
+                android:id="@+id/txtNombreMascota"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Nombre"
+                android:maxLength="50"
+                android:inputType="textCapWords"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Fecha adopción ========== -->
+            <EditText
+                android:id="@+id/txtFechaAdopcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Fecha de adopción (DD/MM/YYYY)"
+                android:focusable="false"
+                android:inputType="none"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== ESPECIE (Perro/Gato) ========== -->
+            <AutoCompleteTextView
+                android:id="@+id/txtEspecie"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Especie (Perro / Gato)"
+                android:focusable="false"
+                android:focusableInTouchMode="false"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== RAZA (dependiente de especie) ========== -->
+            <AutoCompleteTextView
+                android:id="@+id/txtRaza"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Raza"
+                android:inputType="none"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:layout_marginBottom="12dp" />
+
+            <EditText
+                android:id="@+id/txtRazaOtro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Escribe la raza"
+                android:visibility="gone"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:layout_marginBottom="12dp" />
+
+            <TextView
+                android:id="@+id/txtIdentificarRaza"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Identifica la raza de tu mascota"
+                android:textColor="#0000EE"
+                android:textStyle="bold"
+                android:visibility="gone"
+                android:padding="8dp"
+                android:autoLink="web" />
+
+
+            <!-- ========== Color ========== -->
+            <AutoCompleteTextView
+                android:id="@+id/txtColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Color"
+                android:inputType="textCapWords"
+                android:maxLength="50"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Sexo ========== -->
+            <AutoCompleteTextView
+                android:id="@+id/txtSexo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Sexo (Hembra / Macho)"
+                android:inputType="none"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Peso ========== -->
+            <EditText
+                android:id="@+id/txtPeso"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Peso (kg)"
+                android:inputType="numberDecimal"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Estatura ========== -->
+            <EditText
+                android:id="@+id/txtEstatura"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Estatura (cm)"
+                android:inputType="numberDecimal"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Alergias ========== -->
+            <EditText
+                android:id="@+id/txtAlergias"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Alergias (opcional)"
+                android:inputType="textCapSentences"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Notas ========== -->
+            <EditText
+                android:id="@+id/txtNotas"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:hint="Notas adicionales"
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:textColor="@android:color/black"
+                android:textColorHint="#757575"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ========== Fotografía ========== -->
+            <Button
+                android:id="@+id/btnFoto"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Subir fotografía"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:backgroundTint="@color/botonIniciarSesion"
+                android:layout_marginBottom="24dp" />
+
+            <ImageView
+                android:id="@+id/imgFotoMascota"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_gravity="center"
+                android:scaleType="centerCrop"
+                android:background="@drawable/campos_circulares"
+                android:src="@drawable/foto_morado"
+                android:layout_marginBottom="24dp" />
+
+
+            <!-- ========== Guardar ========== -->
+            <Button
+                android:id="@+id/btnGuardarMascota"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Guardar mascota"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:backgroundTint="@color/botonIniciarSesion"
+                android:layout_marginTop="10dp" />
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>
