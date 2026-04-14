@@ -248,4 +248,24 @@ object ValidationUtils {
                 && isValidProximaFechaVacuna(proximaFecha)
                 && isValidRuacMascota(ruac)
     }
+
+    // -----------------------------
+    // VALIDACIONES CITAS
+    // -----------------------------
+
+    fun isValidServicio(servicio: String): Boolean {
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]{3,40}$")
+        return regex.matches(servicio)
+    }
+
+    fun isValidHorario(horario: String): Boolean {
+        val regex = Regex("^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}$")
+        return regex.matches(horario)
+    }
+
+    fun isValidNotasCita(notas: String): Boolean {
+        if (notas.isEmpty()) return true
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s,.]{0,200}$")
+        return regex.matches(notas)
+    }
 }

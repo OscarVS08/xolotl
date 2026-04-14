@@ -4,7 +4,7 @@
     android:background="@drawable/fondo_interfaz"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.main.usuario.AgregarCitasActivity">
+    tools:context=".ui.main.usuario.EditarCitasActivity">
 
     <!-- ===== Botón Home ===== -->
     <FrameLayout
@@ -32,7 +32,7 @@
         android:id="@+id/txtTituloDesparasitacion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Registro de citas"
+        android:text="Editar de citas"
         android:textSize="30sp"
         android:textStyle="bold"
         android:textColor="@android:color/black"
@@ -66,8 +66,8 @@
                 android:elevation="6dp">
 
                 <!-- AQUÍ VA TODO TU FORMULARIO (Sin cambiar nada) -->
-                <AutoCompleteTextView
-                    android:id="@+id/spinnerMascota"
+                <TextView
+                    android:id="@+id/txtNombreMascota"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="Selecciona la mascota"

@@ -19,6 +19,15 @@
         android:gravity="center"
         android:textColor="@color/colorTitulos" />
 
+    <!-- Tarjetas dinamicas de citas -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerCitas"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/txtTituloLogo"
+        android:layout_marginTop="16dp"
+        android:padding="8dp"/>
+
     <!-- Menú desplegable (inicialmente oculto) -->
     <LinearLayout
         android:id="@+id/layoutMenuOpciones"
