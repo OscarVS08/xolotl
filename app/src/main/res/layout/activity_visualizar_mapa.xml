@@ -7,12 +7,6 @@
     tools:context=".ui.main.usuario.mapas.VisualizarMapaActivity">
 
     <!-- ===== Botón Home ===== -->
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="android:padding=&quot;12dp&quot;" />
-
     <FrameLayout
         android:id="@+id/btnHomeContainer"
         android:layout_width="60dp"
