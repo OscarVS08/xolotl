@@ -3,8 +3,12 @@ package com.example.xolotl
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import cn.pedant.SweetAlert.SweetAlertDialog
+import com.example.xolotl.data.models.Citas
 import com.example.xolotl.databinding.ActivityMainBinding
 import com.example.xolotl.ui.auth.InicioActivity
 import com.example.xolotl.ui.main.mascota.AgregarDesparasitacionesActivity
@@ -12,6 +16,7 @@ import com.example.xolotl.ui.main.mascota.AgregarMascotaActivity
 import com.example.xolotl.ui.main.mascota.AgregarVacunasActivity
 import com.example.xolotl.ui.main.mascota.MascotasActivity
 import com.example.xolotl.ui.main.usuario.AgregarCitasActivity
+import com.example.xolotl.ui.main.usuario.CitasAdapter
 import com.example.xolotl.ui.main.usuario.EditarPerfilActivity
 import com.example.xolotl.ui.main.usuario.NotificacionesActivity
 import com.example.xolotl.ui.main.usuario.mapas.VisualizarMapaActivity
@@ -26,6 +31,12 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
     private var menuVisible = false
+
+    // Variables para mostrar las tarjetas de citas
+    private lateinit var recyclerCitas: RecyclerView
+    private val listaCitas = mutableListOf<Citas>()
+    private lateinit var adapter: CitasAdapter
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +53,20 @@ class MainActivity : AppCompatActivity() {
         notificacionesUsuario()
         editarPerfilUsuario()
         mostrarMapaNoUrgencias()
+
+        // Para las tarjetas de citas
+        recyclerCitas = findViewById(R.id.recyclerCitas)
+        recyclerCitas.layoutManager = GridLayoutManager(this, 2)
+
+        adapter = CitasAdapter(listaCitas, this)
+        recyclerCitas.adapter = adapter
+
+        //cargarCitas()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        cargarCitas()
     }
 
     // ========================
@@ -210,5 +235,72 @@ class MainActivity : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
+    }
+
+    // Funcion para mostrar las citas
+    private fun cargarCitas() {
+
+        val uid = auth.currentUser?.uid ?: return
+        val db = FirebaseFirestore.getInstance()
+
+        listaCitas.clear()
+
+        db.collection("usuarios")
+            .document(uid)
+            .collection("mascotas")
+            .get()
+            .addOnSuccessListener { mascotas ->
+
+                if (mascotas.isEmpty) {
+                    // recyclerCitas.adapter = CitasAdapter(listaCitas)
+                    adapter.notifyDataSetChanged()
+                    return@addOnSuccessListener
+                }
+
+                var consultasPendientes = mascotas.size()
+
+                for (mascota in mascotas) {
+
+                    val ruac = mascota.id
+                    val nombreMascota = EncryptionUtils.decrypt(mascota.getString("nombre") ?: "")
+
+                    db.collection("usuarios")
+                        .document(uid)
+                        .collection("mascotas")
+                        .document(ruac)
+                        .collection("citas")
+                        .get()
+                        .addOnSuccessListener { citas ->
+
+                            for (doc in citas) {
+
+                                val servicio = EncryptionUtils.decrypt(doc.getString("servicio") ?: "")
+                                val fecha = EncryptionUtils.decrypt(doc.getString("horario") ?: "")
+
+                                listaCitas.add(
+                                    Citas(
+                                        idC = doc.id,
+                                        servicio = servicio,
+                                        horario = fecha,
+                                        notas = "",
+                                        ruacMascota = ruac,
+                                        nombreMascota = nombreMascota
+                                    )
+                                )
+                            }
+
+                            consultasPendientes--
+
+                            // SOLO AQUÍ actualizamos
+                            if (consultasPendientes == 0) {
+                                Toast.makeText(this, "Citas cargadas: ${listaCitas.size}", Toast.LENGTH_SHORT).show()
+                                recyclerCitas.adapter = CitasAdapter(listaCitas, this)
+                            }
+                        }
+                        .addOnFailureListener {
+                            consultasPendientes--
+                        }
+                }
+            }
     }
 }

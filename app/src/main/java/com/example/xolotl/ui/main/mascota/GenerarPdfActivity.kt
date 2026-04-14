@@ -20,6 +20,8 @@ import android.graphics.Color
 import android.graphics.RectF
 import android.graphics.drawable.BitmapDrawable
 import android.widget.ImageView
+import com.example.xolotl.data.models.Desparasitaciones
+import com.example.xolotl.data.models.Vacunas
 
 
 class GenerarPdfActivity : AppCompatActivity() {
@@ -41,6 +43,8 @@ class GenerarPdfActivity : AppCompatActivity() {
     private lateinit var txtTelefono: TextView
     private lateinit var txtTelAltU: TextView
     private lateinit var imgFotoMascota: ImageView
+    private val listaDesparasitaciones = mutableListOf<Desparasitaciones>()
+    private val listaVacunas = mutableListOf<Vacunas>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -124,6 +128,59 @@ class GenerarPdfActivity : AppCompatActivity() {
                 }
             }
 
+
+        db.collection("usuarios")
+            .document(userId)
+            .collection("mascotas")
+            .document(mascotaId)
+            .collection("desparasitaciones")
+            .get()
+            .addOnSuccessListener { result ->
+
+                listaDesparasitaciones.clear()
+
+                for (doc in result) {
+                    val des = doc.toObject(Desparasitaciones::class.java)
+
+                    listaDesparasitaciones.add(
+                        Desparasitaciones(
+                            tipo = EncryptionUtils.decrypt(des.tipo),
+                            nombre = EncryptionUtils.decrypt(des.nombre),
+                            marca = EncryptionUtils.decrypt(des.marca),
+                            fecha = EncryptionUtils.decrypt(des.fecha),
+                            proximaFecha = EncryptionUtils.decrypt(des.proximaFecha),
+                            ruacMascota = des.ruacMascota
+                        )
+                    )
+                }
+            }
+
+        db.collection("usuarios")
+            .document(userId)
+            .collection("mascotas")
+            .document(mascotaId)
+            .collection("vacunas")
+            .get()
+            .addOnSuccessListener { result ->
+
+                listaVacunas.clear()
+
+                for (doc in result) {
+                    val vac = doc.toObject(Vacunas::class.java)
+
+                    listaVacunas.add(
+                        Vacunas(
+                            nombre = EncryptionUtils.decrypt(vac.nombre),
+                            marca = EncryptionUtils.decrypt(vac.marca),
+                            dosis = EncryptionUtils.decrypt(vac.dosis),
+                            fecha = EncryptionUtils.decrypt(vac.fecha),
+                            proximaFecha = EncryptionUtils.decrypt(vac.proximaFecha),
+                            ruacMascota = vac.ruacMascota
+                        )
+                    )
+                }
+            }
+
         // --- Cargar datos del dueño ---
         db.collection("usuarios")
             .document(userId)
@@ -180,7 +237,7 @@ class GenerarPdfActivity : AppCompatActivity() {
 
             val titlePaint = Paint().apply {
                 color = Color.parseColor("#3F51B5")
-                textSize = 26f
+                textSize = 15f
                 isFakeBoldText = true
                 textAlign = Paint.Align.CENTER
             }
@@ -288,6 +345,118 @@ class GenerarPdfActivity : AppCompatActivity() {
 
             drawMultiLine("Alergias:", txtAlergias.text.toString())
             drawMultiLine("Notas:", txtNotas.text.toString())
+
+            // Agregando tablas de vacunas y des
+            fun drawTable(headers: List<String>, rows: List<List<String>>) {
+
+                val startX = 40f
+                val tableWidth = pageWidth - 80f
+                val columnWidth = tableWidth / headers.size
+
+                val headerPaint = Paint().apply {
+                    color = Color.WHITE
+                    textSize = 14f
+                    isFakeBoldText = true
+                }
+
+                val cellPaint = Paint().apply {
+                    color = Color.BLACK
+                    textSize = 13f
+                }
+
+                val bgHeaderPaint = Paint().apply {
+                    color = Color.parseColor("#3F51B5")
+                }
+
+                val borderPaint = Paint().apply {
+                    color = Color.BLACK
+                    strokeWidth = 1f
+                    style = Paint.Style.STROKE
+                }
+
+                // =========================
+                // HEADER
+                // =========================
+                ensureSpace(40f)
+
+                var x = startX
+
+                headers.forEach { header ->
+                    canvas.drawRect(x, y - 20f, x + columnWidth, y + 10f, bgHeaderPaint)
+                    canvas.drawText(header, x + 10f, y, headerPaint)
+                    canvas.drawRect(x, y - 20f, x + columnWidth, y + 10f, borderPaint)
+                    x += columnWidth
+                }
+
+                y += 25f
+
+                // =========================
+                // ROWS
+                // =========================
+                for (row in rows) {
+
+                    ensureSpace(30f)
+                    x = startX
+
+                    row.forEach { cell ->
+                        canvas.drawText(cell.take(12), x + 10f, y, cellPaint)
+                        canvas.drawRect(x, y - 20f, x + columnWidth, y + 10f, borderPaint)
+                        x += columnWidth
+                    }
+
+                    y += 25f
+                }
+
+                y += 20f
+            }
+
+            // Desparasitaciones
+            ensureSpace(40f)
+            canvas.drawText("Desparasitaciones", 40f, y, titlePaint)
+            y += 30
+
+            if (listaDesparasitaciones.isEmpty()) {
+                drawField("Sin registros", "-")
+            } else {
+
+                val headers = listOf("Método", "Nombre", "Marca", "Fecha", "Próxima")
+
+                val rows = listaDesparasitaciones.map {
+                    listOf(
+                        it.tipo,
+                        it.nombre,
+                        it.marca,
+                        it.fecha,
+                        it.proximaFecha
+                    )
+                }
+
+                drawTable(headers, rows)
+            }
+
+            // Vacunas
+            ensureSpace(40f)
+            canvas.drawText("Vacunas", 40f, y, titlePaint)
+            y += 30
+
+            if (listaVacunas.isEmpty()) {
+                drawField("Sin registros", "-")
+            } else {
+
+                val headers = listOf("Nombre", "Marca", "Dosis", "Fecha", "Próxima")
+
+                val rows = listaVacunas.map {
+                    listOf(
+                        it.nombre,
+                        it.marca,
+                        it.dosis,
+                        it.fecha,
+                        it.proximaFecha
+                    )
+                }
+
+                drawTable(headers, rows)
+            }
 
             pdf.finishPage(page)
 

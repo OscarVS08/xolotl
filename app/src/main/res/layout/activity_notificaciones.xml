@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/fondo_interfaz"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.main.usuario.NotificacionesActivity">
+    android:layout_height="match_parent">
 
+    <!-- BOTÓN HOME -->
     <FrameLayout
         android:id="@+id/btnHomeContainer"
         android:layout_width="60dp"
@@ -22,13 +21,12 @@
             android:layout_height="match_parent"
             android:background="@android:color/transparent"
             android:src="@drawable/home_morado"
-            android:contentDescription="Volver al inicio"
             android:scaleType="centerCrop"/>
     </FrameLayout>
 
-    <!-- ====== TÍTULO ====== -->
+    <!-- TÍTULO -->
     <TextView
-        android:id="@+id/txtTituloMascota"
+        android:id="@+id/txtTituloNotificaciones"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Notificaciones"
@@ -39,89 +37,144 @@
         android:layout_marginTop="50dp"
         android:layout_toEndOf="@id/btnHomeContainer"/>
 
-    <!-- ===== Scroll con formulario ===== -->
+    <!-- CONTENIDO -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/txtTituloMascota"
-        android:layout_marginTop="10dp"
-        android:fillViewport="true">
+        android:layout_height="match_parent"
+        android:layout_below="@id/txtTituloNotificaciones"
+        android:layout_marginTop="10dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal"
             android:layout_margin="24dp"
             android:padding="20dp"
-            android:background="@drawable/rectangulosesion"
-            android:paddingBottom="60dp"
-            android:elevation="6dp">
+            android:background="@drawable/rectangulosesion">
 
+            <!-- BLOQUE INFORMATIVO -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:layout_margin="24dp"
-                android:padding="20dp"
+                android:padding="16dp"
                 android:background="@drawable/fondo_logo_circular"
-                android:paddingBottom="60dp"
-                android:elevation="6dp">
+                android:layout_marginBottom="16dp">
 
-                <!-- Texto descriptivo -->
                 <TextView
                     android:id="@+id/txtDescripcion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Selecciona la frecuencia con la que se enviaran notificaciones de tus citas agendadas. La configuración se aplica a todas las citas
-                    por igual. De forma predeterminada, se te enviara un recordatorio 24 horas antes de la asignada en la cita. Esta configuración son notificaciones adicionales"
+                    android:text="Selecciona la cita para configurar la notificación. Se enviará un recordatorio antes de la hora programada."
+                    android:textSize="16sp"
                     android:textColor="@android:color/black"
-                    android:textSize="18sp"
-                    android:textAlignment="center"
-                    android:layout_marginBottom="1dp" />
-
+                    android:textAlignment="center"/>
             </LinearLayout>
 
+            <!-- SELECTOR DE CITAS -->
+            <AutoCompleteTextView
+                android:id="@+id/spinnerCitas"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Selecciona una cita"
+                android:textColor="@android:color/black"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- FECHA Y HORA -->
+            <TextView
+                android:id="@+id/txtFechaHoraCita"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Fecha y hora de la cita"
+                android:textColor="@android:color/black"
+                android:background="@drawable/campos_circulares"
+                android:padding="12dp"
+                android:layout_marginBottom="16dp"/>
+
+            <!-- BLOQUE PROGRAMAR -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center_horizontal"
-                android:layout_margin="24dp"
-                android:padding="20dp"
+                android:padding="16dp"
                 android:background="@drawable/fondo_logo_circular"
-                android:backgroundTint="@color/white"
-                android:paddingBottom="60dp"
-                android:elevation="6dp">
+                android:backgroundTint="@android:color/white"
+                android:layout_marginBottom="16dp">
 
                 <TextView
                     android:id="@+id/txtDescripcionHora"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="Horas de envío de mensajes:"
+                    android:layout_height="wrap_content"
+                    android:text="Programar notificación:"
                     android:textColor="@android:color/black"
                     android:textSize="18sp"
-                    android:textAlignment="center"
-                    android:layout_marginBottom="1dp"
-                    />
-
+                    android:textAlignment="center"/>
             </LinearLayout>
 
-            <AutoCompleteTextView
-                android:id="@+id/txtColor"
+            <!-- CAMPO NOTIFICACIÓN -->
+            <EditText
+                android:id="@+id/txtFechaHoraNotificacion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapWords"
-                android:maxLength="50"
+                android:hint="Fecha y hora (DD/MM/YYYY HH:MM)"
                 android:textColor="@android:color/black"
-                android:textColorHint="#757575"
+                android:focusable="false"
+                android:inputType="none"
                 android:background="@drawable/campos_circulares"
-                android:layout_margin="24dp"
-                android:padding="10dp"
-                android:layout_marginBottom="10dp" />
-
-
+                android:padding="12dp"/>
         </LinearLayout>
     </ScrollView>
+    <!-- ===== BOTONES FUERA DEL RECUADRO ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@id/txtTituloNotificaciones"
+        android:layout_marginTop="500dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="40dp">
+
+        <!-- ESPACIO -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <!-- ESPACIO -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"/>
+
+        <!-- BOTÓN -->
+        <LinearLayout
+            android:id="@+id/btnGuardarNotificacion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="12dp"
+            android:background="@drawable/campos_circulares"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/aceptar_morado"
+                android:layout_marginBottom="6dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Guardar cambios"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"/>
+        </LinearLayout>
+
+    </LinearLayout>
 </RelativeLayout>

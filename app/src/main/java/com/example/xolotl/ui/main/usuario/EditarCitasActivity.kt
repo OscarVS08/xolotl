@@ -11,37 +11,32 @@ import com.example.xolotl.utils.EncryptionUtils
 import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import java.util.Calendar
-// Importacion para mapeo de errores en tiempo de llenado de los formularios
+import java.util.*
 import androidx.core.widget.addTextChangedListener
-import com.example.xolotl.data.models.Citas
-// Otras importaciones
-import com.example.xolotl.data.repository.CitasRepository
 
-class AgregarCitasActivity : AppCompatActivity() {
+class EditarCitasActivity : AppCompatActivity() {
 
-    private lateinit var spinnerMascota: AutoCompleteTextView
+    private val db = FirebaseFirestore.getInstance()
+    private val uid = FirebaseAuth.getInstance().uid
+
+    private lateinit var txtNombreMascota: TextView
     private lateinit var txtRuac: TextView
     private lateinit var txtServicio: AutoCompleteTextView
     private lateinit var txtFechaHora: EditText
     private lateinit var txtNotas: EditText
     private lateinit var btnGuardar: LinearLayout
 
-    private val repository = CitasRepository()
-
-    private val listaMascotas = mutableListOf<String>()
-    private val mapaMascotas = mutableMapOf<String, String>()
-
-    private var ruacSeleccionado = ""
+    private var idCita = ""
+    private var ruacMascota = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_agregar_cita)
+        setContentView(R.layout.activity_editar_citas)
 
         // ============================
         // REFERENCIAS
         // ============================
-        spinnerMascota = findViewById(R.id.spinnerMascota)
+        txtNombreMascota = findViewById(R.id.txtNombreMascota)
         txtRuac = findViewById(R.id.txtRuac)
         txtServicio = findViewById(R.id.txtServicio)
         txtFechaHora = findViewById(R.id.txtFechaHora)
@@ -49,24 +44,19 @@ class AgregarCitasActivity : AppCompatActivity() {
         btnGuardar = findViewById(R.id.btnGuardarCambios)
 
         // ============================
-        // CONFIGURACIONES
+        // RECIBIR DATOS
         // ============================
-        cargarMascotasUsuario()
+        idCita = intent.getStringExtra("id") ?: return
+        ruacMascota = intent.getStringExtra("ruacMascota") ?: return
+
+        // ============================
+        // CONFIGURAR
+        // ============================
         configurarServicios()
         configurarFechaHora()
+        cargarDatosCita()
+        cargarMascota()
         configurarValidacionesTiempoReal()
-
-        spinnerMascota.setOnClickListener {
-            spinnerMascota.showDropDown()
-        }
-
-        spinnerMascota.setOnItemClickListener { parent, _, position, _ ->
-            val nombre = parent.getItemAtPosition(position).toString()
-            ruacSeleccionado = mapaMascotas[nombre] ?: ""
-
-            // Mostrar RUAC
-            txtRuac.text = ruacSeleccionado
-        }
 
         btnGuardar.setOnClickListener {
 
@@ -96,21 +86,7 @@ class AgregarCitasActivity : AppCompatActivity() {
             }
 
             // ============================
-            // VALIDAR MASCOTA
-            // ============================
-
-            if (ruacSeleccionado.isEmpty()) {
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Falta información",
-                    mensaje = "Selecciona una mascota",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
-                )
-                return@setOnClickListener
-            }
-
-            // ============================
-            // SI HAY CAMPOS VACÍOS
+            // SI HAY ERRORES
             // ============================
 
             if (hayError) {
@@ -124,67 +100,102 @@ class AgregarCitasActivity : AppCompatActivity() {
             }
 
             // ============================
-            // ALERTA DE CONFIRMACIÓN
+            // CONFIRMACIÓN
             // ============================
 
             UiUtils.mostrarAlertaCerrarSesion(
                 activity = this,
-                titulo = "Confirmar cita",
-                mensaje = "Verifica los datos:\n\n" +
-                        "Servicio: $servicio\n" +
-                        "Fecha y hora: $fechaHora\n" +
-                        "Notas: $notas",
+                titulo = "Confirmar cambios",
+                mensaje = "¿Deseas actualizar la cita?",
                 tipo = cn.pedant.SweetAlert.SweetAlertDialog.WARNING_TYPE,
-                confirmText = "Registrar",
+                confirmText = "Actualizar",
                 cancelText = "Cancelar",
                 onConfirm = {
-                    guardarCita()
+                    actualizarCita()
                 },
-                onCancel = {
-                    // Se queda en pantalla
-                }
+                onCancel = { }
             )
         }
 
-        // Botón home
         findViewById<View>(R.id.btnHome).setOnClickListener {
             finish()
         }
     }
 
     // ============================
-    // CARGAR MASCOTAS
+    // CARGAR DATOS
     // ============================
-    private fun cargarMascotasUsuario() {
+    private fun cargarDatosCita() {
 
-        val uid = FirebaseAuth.getInstance().uid ?: return
-
-        FirebaseFirestore.getInstance()
-            .collection("usuarios")
-            .document(uid)
+        db.collection("usuarios")
+            .document(uid!!)
             .collection("mascotas")
+            .document(ruacMascota)
+            .collection("citas")
+            .document(idCita)
             .get()
-            .addOnSuccessListener { result ->
+            .addOnSuccessListener { doc ->
 
-                listaMascotas.clear()
-                mapaMascotas.clear()
+                if (doc.exists()) {
 
-                for (doc in result) {
-                    val nombre = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
-                    listaMascotas.add(nombre)
-                    mapaMascotas[nombre] = doc.id
+                    val servicio = EncryptionUtils.decrypt(doc.getString("servicio") ?: "")
+                    val fecha = EncryptionUtils.decrypt(doc.getString("horario") ?: "")
+                    val notas = EncryptionUtils.decrypt(doc.getString("notas") ?: "")
+
+                    txtServicio.setText(servicio, false)
+                    txtFechaHora.setText(fecha)
+                    txtNotas.setText(notas)
                 }
-
-                val adapter = ArrayAdapter(
-                    this,
-                    android.R.layout.simple_dropdown_item_1line,
-                    listaMascotas
-                )
-
-                spinnerMascota.setAdapter(adapter)
             }
     }
 
+    // ============================
+    // ACTUALIZAR
+    // ============================
+    private fun actualizarCita() {
+
+        val servicio = txtServicio.text.toString()
+        val fechaHora = txtFechaHora.text.toString()
+        val notas = txtNotas.text.toString()
+
+        val datos = mapOf(
+            "servicio" to EncryptionUtils.encrypt(servicio),
+            "horario" to EncryptionUtils.encrypt(fechaHora),
+            "notas" to EncryptionUtils.encrypt(notas)
+        )
+
+        db.collection("usuarios")
+            .document(uid!!)
+            .collection("mascotas")
+            .document(ruacMascota)
+            .collection("citas")
+            .document(idCita)
+            .update(datos)
+            .addOnSuccessListener {
+
+                UiUtils.mostrarAlerta(
+                    this,
+                    "Actualizado",
+                    "La cita se actualizó correctamente",
+                    cn.pedant.SweetAlert.SweetAlertDialog.SUCCESS_TYPE
+                ) {
+                    finish()
+                }
+            }
+            .addOnFailureListener {
+
+                UiUtils.mostrarAlerta(
+                    this,
+                    "Error",
+                    "No se pudo actualizar la cita",
+                    cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
+                )
+            }
+    }
+
+    // ============================
+    // SERVICIOS
+    // ============================
     // ============================
     // SERVICIOS (CATÁLOGO)
     // ============================
@@ -273,64 +284,38 @@ class AgregarCitasActivity : AppCompatActivity() {
         }
     }
 
+    private fun cargarMascota() {
+
+        db.collection("usuarios")
+            .document(uid!!)
+            .collection("mascotas")
+            .document(ruacMascota)
+            .get()
+            .addOnSuccessListener { doc ->
+
+                if (doc.exists()) {
+
+                    val nombre = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
+                    val ruac = doc.id
+
+                    txtNombreMascota.text = nombre
+                    txtRuac.text = ruac
+                }
+            }
+    }
+
     private fun configurarValidacionesTiempoReal() {
 
         txtServicio.addTextChangedListener {
-            if (it.toString().isNotEmpty()) {
-                txtServicio.error = null
-            }
+            if (it.toString().isNotEmpty()) txtServicio.error = null
         }
 
         txtFechaHora.addTextChangedListener {
-            if (it.toString().isNotEmpty()) {
-                txtFechaHora.error = null
-            }
+            if (it.toString().isNotEmpty()) txtFechaHora.error = null
         }
 
         txtNotas.addTextChangedListener {
-            if (it.toString().isNotEmpty()) {
-                txtNotas.error = null
-            }
+            if (it.toString().isNotEmpty()) txtNotas.error = null
         }
-    }
-
-    private fun guardarCita() {
-
-        val servicio = txtServicio.text.toString()
-        val fechaHora = txtFechaHora.text.toString()
-        val notas = txtNotas.text.toString()
-
-        val cita = Citas(
-            servicio = EncryptionUtils.encrypt(servicio),
-            horario = EncryptionUtils.encrypt(fechaHora),
-            notas = EncryptionUtils.encrypt(notas),
-            ruacMascota = ruacSeleccionado
-        )
-
-        repository.registrarCita(
-            ruacSeleccionado,
-            cita,
-            onSuccess = {
-
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Registro exitoso",
-                    mensaje = "La cita se guardó correctamente",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.SUCCESS_TYPE,
-                    onConfirm = {
-                        finish() // Regresa a MainActivity
-                    }
-                )
-            },
-            onError = {
-
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Error",
-                    mensaje = "No se pudo guardar la cita",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
-                )
-            }
-        )
     }
 }
