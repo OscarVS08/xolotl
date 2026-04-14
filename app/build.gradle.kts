@@ -59,6 +59,7 @@ dependencies {
     implementation("com.google.firebase:firebase-storage:21.0.0")
     //Dependencia para Sweet Alert
     implementation("com.github.f0ris.sweetalert:library:1.6.2")
+    implementation(libs.play.services.location)
     //Dependencias de pruebas
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

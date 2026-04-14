@@ -5,9 +5,6 @@
     <!-- PERMISO PARA GOOGLE MAPS -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
-    <!-- PERMISO  PARA NOTIFICACIONES -->
-    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
 
     <application
         android:name=".App"
@@ -90,14 +87,6 @@
 
         <!-- Pantalla para agregar citas -->
         <activity android:name=".ui.main.usuario.AgregarCitasActivity" />
-
-        <!-- Pantalla para editar citas -->
-        <activity android:name=".ui.main.usuario.EditarCitasActivity" />
-
-        <!-- Notificaciones -->
-        <receiver
-            android:name=".ui.main.usuario.NotificacionReceiver"
-            android:exported="true"/>
 
     </application>
 </manifest>
