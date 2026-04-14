@@ -15,7 +15,7 @@ class NotificacionReceiver : BroadcastReceiver() {
         val mensaje = intent.getStringExtra("mensaje") ?: "Recordatorio"
 
         val builder = NotificationCompat.Builder(context, "canal_citas")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // 🔥 IMPORTANTE
+            .setSmallIcon(R.drawable.ic_launcher_foreground) // IMPORTANTE
             .setContentTitle("Notificación")
             .setContentText(mensaje)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
