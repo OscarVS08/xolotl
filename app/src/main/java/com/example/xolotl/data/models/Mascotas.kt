@@ -3,6 +3,7 @@ package com.example.xolotl.data.models
 data class Mascotas(
     val ruac: String = "",
     val nombre: String = "",
+    val fechaNacimiento: String = "",
     val fechaAdopcion: String = "",
     val color: String = "",
     val sexo: String = "",        // Hembra / Macho

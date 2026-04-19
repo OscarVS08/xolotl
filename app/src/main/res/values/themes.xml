@@ -1,8 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.Xolotl" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:windowBackground">@drawable/fondo_interfaz</item>
+        <item name="colorPrimary">@color/moradoSubtitulo</item>
+    </style>
+
+    <style name="ThemeOverlay.App.ExposedDropdownMenu" parent="">
+        <item name="listPopupWindowStyle">@style/Widget.App.ListPopupWindow</item>
+    </style>
+
+    <style name="Widget.App.ListPopupWindow" parent="Widget.AppCompat.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/campos_circulares</item>
+        <item name="android:backgroundTint">#1E1E1E</item>
     </style>
 
     <style name="Theme.Xolotl" parent="Base.Theme.Xolotl" />

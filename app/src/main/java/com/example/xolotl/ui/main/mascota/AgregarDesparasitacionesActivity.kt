@@ -1,211 +1,179 @@
 package com.example.xolotl.ui.main.mascota
 
+import android.app.DatePickerDialog
 import android.os.Bundle
-import android.view.View
-import android.widget.*
+import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.addTextChangedListener
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.xolotl.R
 import com.example.xolotl.data.models.Desparasitaciones
 import com.example.xolotl.data.repository.DesparasitacionRepository
+import com.example.xolotl.databinding.ActivityAgregarDesparasitacionBinding
 import com.example.xolotl.utils.EncryptionUtils
+import com.example.xolotl.utils.UiUtils
+import com.example.xolotl.utils.ValidationUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-import android.app.DatePickerDialog
-import com.example.xolotl.utils.UiUtils
 import java.util.Calendar
-import com.example.xolotl.utils.ValidationUtils
-import androidx.core.widget.addTextChangedListener
 
 class AgregarDesparasitacionesActivity : AppCompatActivity() {
 
-    private lateinit var spinnerMascota: AutoCompleteTextView
-    private lateinit var txtMetodo: EditText
-    private lateinit var txtNombre: EditText
-    private lateinit var txtMarca: EditText
-    private lateinit var txtFecha: EditText
-    private lateinit var txtProxFecha: EditText
-    private lateinit var btnGuardar: LinearLayout
+    // Usamos exclusivamente Binding para evitar el error de UninitializedPropertyAccessException
+    private lateinit var binding: ActivityAgregarDesparasitacionBinding
 
     private val repository = DesparasitacionRepository()
-
     private val listaNombresMascotas = mutableListOf<String>()
     private val mapaMascotas = mutableMapOf<String, String>() // nombre -> RUAC
-
     private var ruacSeleccionado: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_agregar_desparasitacion)
+        // 1. Inicialización de Binding
+        binding = ActivityAgregarDesparasitacionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        spinnerMascota = findViewById(R.id.spinnerMascota)
-        txtMetodo = findViewById(R.id.txtMetodo)
-        txtNombre = findViewById(R.id.txtNombre)
-        txtMarca = findViewById(R.id.txtMarca)
-        txtFecha = findViewById(R.id.txtFecha)
-        txtProxFecha = findViewById(R.id.txtProxFecha)
-        btnGuardar = findViewById(R.id.btnGuardarCambios)
-
+        // 2. Carga de datos y configuraciones iniciales
         cargarMascotasUsuario()
         configurarValidacionesTiempoReal()
+        configurarCamposFecha()
 
-        spinnerMascota.setOnItemClickListener { parent, _, position, _ ->
-            val nombreMascota = parent.getItemAtPosition(position).toString()
-            ruacSeleccionado = mapaMascotas[nombreMascota] ?: ""
+        // 3. Configuración del Spinner de Mascotas
+        binding.spinnerMascota.apply {
+            threshold = 1
+            keyListener = null // Forzar selección, no escritura
+            setOnItemClickListener { parent, _, position, _ ->
+                val nombreMascota = parent.getItemAtPosition(position).toString()
+                ruacSeleccionado = mapaMascotas[nombreMascota] ?: ""
+                binding.layoutMascota.error = null // Limpiar error al seleccionar
+            }
+            setOnClickListener { showDropDown() }
         }
 
-        spinnerMascota.threshold = 1
 
-        spinnerMascota.setOnClickListener {
-            spinnerMascota.showDropDown()
+        val adapter = ArrayAdapter(
+            this,
+            R.layout.item_dropdown, // <--- Nuevo layout personalizado
+            listaNombresMascotas
+        )
+        binding.spinnerMascota.setAdapter(adapter)
+
+        // 4. Botón Guardar
+        binding.btnGuardar.setOnClickListener {
+            validarFormularioCompleto()
         }
 
-        spinnerMascota.setOnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                spinnerMascota.showDropDown()
-            }
-        }
-
-        spinnerMascota.keyListener = null
-
-        btnGuardar.setOnClickListener {
-
-            val metodo = txtMetodo.text.toString()
-            val nombre = txtNombre.text.toString()
-            val marca = txtMarca.text.toString()
-            val fecha = txtFecha.text.toString()
-            val proxFecha = txtProxFecha.text.toString()
-
-            // Validaciones
-            var hayError = false
-
-            if (metodo.isEmpty()) {
-                txtMetodo.error = "Campo obligatorio"
-                hayError = true
-            }
-
-            if (nombre.isEmpty()) {
-                txtNombre.error = "Campo obligatorio"
-                hayError = true
-            }
-
-            if (marca.isEmpty()) {
-                txtMarca.error = "Campo obligatorio"
-                hayError = true
-            }
-
-            if (fecha.isEmpty()) {
-                txtFecha.error = "Campo obligatorio"
-                hayError = true
-            }
-
-            if (proxFecha.isEmpty()) {
-                txtProxFecha.error = "Campo obligatorio"
-                hayError = true
-            }
-
-            if (ruacSeleccionado.isEmpty()) {
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Falta información",
-                    mensaje = "Selecciona una mascota",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
-                )
-                return@setOnClickListener
-            }
-
-            if (hayError) {
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Campos incompletos",
-                    mensaje = "Por favor llena todos los campos",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.WARNING_TYPE
-                )
-                return@setOnClickListener
-            }
-
-            if (!ValidationUtils.isValidFechaDesparasitacion(proxFecha)) {
-                txtProxFecha.error = "Fecha inválida"
-                return@setOnClickListener
-            }
-
-            // Alerta de confirmacion de datos
-            UiUtils.mostrarConfirmacionDesparasitacion(
-                activity = this,
-                nombre = nombre,
-                marca = marca,
-                fecha = fecha,
-                proximaFecha = proxFecha,
-                metodo = metodo,
-                onConfirm = {
-                    guardarDesparasitacion()
-                },
-                onCancel = {
-                    // Nos quedamos en el layput
-                }
-            )
-        }
-
-        findViewById<View>(R.id.btnHome).setOnClickListener {
+        // 5. Botón Home
+        binding.btnHome.setOnClickListener {
             finish()
         }
-
-        configurarCamposFecha()
     }
 
-    // ============================
-    // Cargar mascotas del usuario
-    // ============================
-    private fun cargarMascotasUsuario() {
+    private fun configurarValidacionesTiempoReal() {
+        binding.txtMetodo.addTextChangedListener {
+            binding.layoutMetodo.error = if (!ValidationUtils.isValidMetodo(it.toString()))
+                "Mínimo 3 letras (máx 30)" else null
+        }
 
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
-        val db = FirebaseFirestore.getInstance()
+        binding.txtNombre.addTextChangedListener {
+            binding.layoutNombre.error = if (!ValidationUtils.isValidMedicamento(it.toString()))
+                "Nombre de fármaco inválido" else null
+        }
 
-        db.collection("usuarios")
-            .document(uid)
-            .collection("mascotas")
-            .get()
-            .addOnSuccessListener { result ->
+        binding.txtMarca.addTextChangedListener {
+            binding.layoutMarca.error = if (!ValidationUtils.isValidMarca(it.toString()))
+                "Marca inválida" else null
+        }
 
-                listaNombresMascotas.clear()
-                mapaMascotas.clear()
+        binding.txtFecha.addTextChangedListener {
+            binding.layoutFecha.error = if (it.toString().isEmpty()) "Requerido" else null
+        }
 
-                for (doc in result) {
+        binding.txtProxFecha.addTextChangedListener {
+            val prox = it.toString()
+            val actual = binding.txtFecha.text.toString()
 
-                    val nombreCifrado = doc.getString("nombre") ?: continue
-                    val nombre = EncryptionUtils.decrypt(nombreCifrado)
-                    val ruac = doc.id
+            binding.layoutProxFecha.error = when {
+                !ValidationUtils.isValidProximaFecha(prox) -> "Formato DD/MM/YYYY"
+                actual.isNotEmpty() && !ValidationUtils.isFechaPosterior(actual, prox) ->
+                    "Debe ser posterior a la fecha de aplicación"
+                else -> null
+            }
+        }
 
-                    listaNombresMascotas.add(nombre)
-                    mapaMascotas[nombre] = ruac
+        // Función auxiliar para re-validar la lógica de fechas
+        fun validarRelacionFechas() {
+            val fechaAplicacion = binding.txtFecha.text.toString()
+            val proximaFecha = binding.txtProxFecha.text.toString()
+
+            if (fechaAplicacion.isNotEmpty() && proximaFecha.isNotEmpty()) {
+                if (!ValidationUtils.isFechaPosterior(fechaAplicacion, proximaFecha)) {
+                    binding.layoutProxFecha.error = "Debe ser posterior a la aplicación"
+                } else {
+                    binding.layoutProxFecha.error = null
                 }
-
-                //Toast.makeText(this, "Mascotas encontradas: ${listaNombresMascotas.size}", Toast.LENGTH_LONG).show()
-
-                val adapter = ArrayAdapter(
-                    this,
-                    android.R.layout.simple_dropdown_item_1line,
-                    listaNombresMascotas
-                )
-
-                spinnerMascota.setAdapter(adapter)
             }
+        }
 
-            .addOnFailureListener {
-                Toast.makeText(this, "Error Firestore: ${it.message}", Toast.LENGTH_LONG).show()
+        binding.txtFecha.addTextChangedListener {
+            binding.layoutFecha.error = if (it.toString().isEmpty()) "Requerido" else null
+            // IMPORTANTE: Cuando cambia la fecha de aplicación, validamos la relación
+            validarRelacionFechas()
+        }
+
+        binding.txtProxFecha.addTextChangedListener {
+            val prox = it.toString()
+            binding.layoutProxFecha.error = when {
+                prox.isEmpty() -> "Requerido"
+                !ValidationUtils.isValidProximaFecha(prox) -> "Formato DD/MM/YYYY"
+                else -> null
             }
+            // También validamos la relación aquí
+            validarRelacionFechas()
+        }
     }
 
-    // ============================
-    // Guardar desparasitación
-    // ============================
-    private fun guardarDesparasitacion() {
+    private fun validarFormularioCompleto() {
+        val metodo = binding.txtMetodo.text.toString().trim()
+        val nombre = binding.txtNombre.text.toString().trim()
+        val marca = binding.txtMarca.text.toString().trim()
+        val fecha = binding.txtFecha.text.toString().trim()
+        val proxFecha = binding.txtProxFecha.text.toString().trim()
 
-        val metodo = txtMetodo.text.toString()
-        val nombre = txtNombre.text.toString()
-        val marca = txtMarca.text.toString()
-        val fecha = txtFecha.text.toString()
-        val proxFecha = txtProxFecha.text.toString()
+        // Activar visualización de errores modernos (TextInputLayout)
+        binding.layoutMascota.error = if (ruacSeleccionado.isEmpty()) "Selecciona una mascota" else null
+        binding.layoutMetodo.error = if (metodo.isEmpty()) "Obligatorio" else null
+        binding.layoutNombre.error = if (nombre.isEmpty()) "Obligatorio" else null
+        binding.layoutMarca.error = if (marca.isEmpty()) "Obligatorio" else null
+        binding.layoutFecha.error = if (fecha.isEmpty()) "Obligatorio" else null
+        binding.layoutProxFecha.error = if (proxFecha.isEmpty()) "Obligatorio" else null
 
+        // Verificación de errores
+        val tieneErrores = listOf(
+            binding.layoutMascota, binding.layoutMetodo, binding.layoutNombre,
+            binding.layoutMarca, binding.layoutFecha, binding.layoutProxFecha
+        ).any { it.error != null }
+
+        if (tieneErrores) {
+            UiUtils.mostrarAlerta(this, "Formulario incompleto", "Por favor revisa los campos en rojo.", SweetAlertDialog.ERROR_TYPE)
+            return
+        }
+
+        // Confirmación personalizada
+        UiUtils.mostrarConfirmacionDesparasitacion(
+            activity = this,
+            nombre = nombre,
+            marca = marca,
+            fecha = fecha,
+            proximaFecha = proxFecha,
+            metodo = metodo,
+            onConfirm = { guardarDesparasitacion(nombre, marca, fecha, proxFecha, metodo) },
+            onCancel = { }
+        )
+    }
+
+    private fun guardarDesparasitacion(nombre: String, marca: String, fecha: String, proxFecha: String, metodo: String) {
         val desparasitacion = Desparasitaciones(
             tipo = EncryptionUtils.encrypt(metodo),
             nombre = EncryptionUtils.encrypt(nombre),
@@ -215,106 +183,51 @@ class AgregarDesparasitacionesActivity : AppCompatActivity() {
             ruacMascota = ruacSeleccionado
         )
 
-        repository.registrarDesparasitacion(
-            ruacSeleccionado,
-            desparasitacion,
+        repository.registrarDesparasitacion(ruacSeleccionado, desparasitacion,
             onSuccess = {
-
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Registro exitoso",
-                    mensaje = "Datos de la desparasitación agregados exitosamente",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.SUCCESS_TYPE,
-                    onConfirm = {
-                        finish() //Regresa al menú principal
-                    }
-                )
+                UiUtils.mostrarAlerta(this, "Registro exitoso", "Datos agregados correctamente", SweetAlertDialog.SUCCESS_TYPE) {
+                    finish()
+                }
             },
-
             onError = {
-
-                UiUtils.mostrarAlerta(
-                    activity = this,
-                    titulo = "Error",
-                    mensaje = "No se pudo registrar la desparasitación",
-                    tipo = cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
-                )
+                UiUtils.mostrarAlerta(this, "Error", "No se pudo registrar la desparasitación", SweetAlertDialog.ERROR_TYPE)
             }
         )
     }
 
+    private fun cargarMascotasUsuario() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        FirebaseFirestore.getInstance().collection("usuarios").document(uid).collection("mascotas").get()
+            .addOnSuccessListener { result ->
+                listaNombresMascotas.clear()
+                mapaMascotas.clear()
+                for (doc in result) {
+                    val nombre = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
+                    listaNombresMascotas.add(nombre)
+                    mapaMascotas[nombre] = doc.id
+                }
+                val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listaNombresMascotas)
+                binding.spinnerMascota.setAdapter(adapter)
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Error al cargar mascotas", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     private fun configurarCamposFecha() {
-
-        txtFecha.setOnClickListener {
-            mostrarDatePicker { fechaSeleccionada ->
-                txtFecha.setText(fechaSeleccionada)
-            }
+        binding.txtFecha.setOnClickListener {
+            mostrarDatePicker { binding.txtFecha.setText(it) }
         }
-
-        txtProxFecha.setOnClickListener {
-            mostrarDatePicker { fechaSeleccionada ->
-                txtProxFecha.setText(fechaSeleccionada)
-            }
+        binding.txtProxFecha.setOnClickListener {
+            mostrarDatePicker { binding.txtProxFecha.setText(it) }
         }
     }
 
     private fun mostrarDatePicker(onFechaSeleccionada: (String) -> Unit) {
-
         val calendar = Calendar.getInstance()
-
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH)
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-
-        val datePicker = DatePickerDialog(
-            this,
-            { _, selectedYear, selectedMonth, selectedDay ->
-
-                // Formato DD/MM/YYYY
-                val fechaFormateada = String.format(
-                    "%02d/%02d/%04d",
-                    selectedDay,
-                    selectedMonth + 1,
-                    selectedYear
-                )
-
-                onFechaSeleccionada(fechaFormateada)
-
-            },
-            year,
-            month,
-            day
-        )
-
-        datePicker.show()
+        DatePickerDialog(this, { _, year, month, day ->
+            val fechaFormateada = String.format("%02d/%02d/%04d", day, month + 1, year)
+            onFechaSeleccionada(fechaFormateada)
+        }, calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH)).show()
     }
-
-    private fun configurarValidacionesTiempoReal() {
-
-        txtMetodo.addTextChangedListener {
-            val value = it.toString()
-            txtMetodo.error = if (!ValidationUtils.isValidMetodo(value)) "Método inválido" else null
-        }
-
-        txtNombre.addTextChangedListener {
-            val value = it.toString()
-            txtNombre.error = if (!ValidationUtils.isValidMedicamento(value)) "Nombre inválido" else null
-        }
-
-        txtMarca.addTextChangedListener {
-            val value = it.toString()
-            txtMarca.error = if (!ValidationUtils.isValidMarca(value)) "Marca inválida" else null
-        }
-
-        txtFecha.addTextChangedListener {
-            val value = it.toString()
-            txtFecha.error = if (!ValidationUtils.isValidFechaDesparasitacion(value)) "Fecha inválida" else null
-        }
-
-        txtProxFecha.addTextChangedListener {
-            val value = it.toString()
-            txtProxFecha.error = if (!ValidationUtils.isValidFechaDesparasitacion(value)) "Fecha inválida" else null
-        }
-    }
-
 }

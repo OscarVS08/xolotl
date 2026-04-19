@@ -1,78 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:background="@drawable/fondo_interfaz"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.auth.RegistrarseActivity">
+    android:fillViewport="true"
+    android:background="@drawable/fondo_interfaz">
 
-    <!-- Rectángulo amarillo con el título "Registro" -->
-    <FrameLayout
-        android:id="@+id/contenedorLogo"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_marginTop="40dp"
-        android:layout_marginHorizontal="30dp"
-        android:background="@drawable/fondo_logo_circular">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:gravity="center">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Registro"
-                android:textSize="75sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/black" />
-        </LinearLayout>
-    </FrameLayout>
-
-    <!-- Formulario desplazable -->
-    <ScrollView
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/contenedorLogo"
-        android:fillViewport="true"
-        android:layout_marginTop="1dp">
+        android:padding="24dp"
+        tools:context=".ui.auth.RegistrarseActivity">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTitulo"
+            android:layout_width="0dp"
+            android:layout_height="120dp"
+            android:layout_marginTop="32dp"
+            app:cardBackgroundColor="@color/rectanguloLogo"
+            app:cardCornerRadius="35dp"
+            app:cardElevation="10dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintWidth_percent="0.92"
+            app:strokeColor="@color/colorIntermedio"
+            app:strokeWidth="2dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="Registro"
+                android:textSize="65sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.04" />
+        </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
             android:id="@+id/contenedorFormulario"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:layout_margin="24dp"
-            android:padding="20dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
             android:background="@drawable/rectangulosesion"
-            android:paddingBottom="60dp"
+            android:orientation="vertical"
+            android:padding="28dp"
             android:elevation="6dp"
-            android:gravity="center_horizontal">
+            app:layout_constraintTop_toBottomOf="@+id/cardTitulo"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="@+id/cardTitulo"
+            app:layout_constraintStart_toStartOf="@+id/cardTitulo">
 
-            <!-- ===== DATOS PERSONALES ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Datos personales"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginBottom="12dp" />
+                android:textColor="@color/white"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="16dp" />
 
-            <EditText
-                android:id="@+id/txtCurp"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCurp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="CURP (18 caracteres)"
-                android:maxLength="18"
-                android:inputType="textCapCharacters"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="4dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtCurp"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="CURP (18 caracteres)"
+                    android:maxLength="18"
+                    android:inputType="textCapCharacters"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <TextView
                 android:id="@+id/txtOlvidasteCurp"
@@ -81,253 +91,349 @@
                 android:text="¿Olvidaste tu CURP?"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
-                android:layout_marginBottom="20dp"
-                android:paddingVertical="20dp"
-                android:paddingHorizontal="20dp"
-                android:autoLink="web"
+                android:textColor="@color/white"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="-10dp"
+                android:layout_marginBottom="15dp"
+                android:padding="10dp"
                 android:clickable="true"
                 android:focusable="true" />
 
-            <EditText
-                android:id="@+id/txtNombre"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutNombre"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Nombre(s)"
-                android:maxLength="50"
-                android:inputType="textCapWords"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtNombre"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Nombre(s)"
+                    android:inputType="textCapWords"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtApellidoP"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutApellidoP"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Apellido paterno"
-                android:maxLength="50"
-                android:inputType="textCapWords"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtApellidoP"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Apellido paterno"
+                    android:inputType="textCapWords"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtApellidoM"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutApellidoM"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Apellido materno"
-                android:maxLength="50"
-                android:inputType="textCapWords"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="12dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtApellidoM"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Apellido materno"
+                    android:inputType="textCapWords"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtTelefono"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutTelefono"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Teléfono (10 dígitos)"
-                android:inputType="phone"
-                android:maxLength="10"
-                android:digits="0123456789"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtTelefono"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Teléfono (10 dígitos)"
+                    android:inputType="phone"
+                    android:maxLength="10"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtTelefonoAlt"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutTelefonoAlt"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Teléfono alternativo (opcional)"
-                android:inputType="phone"
-                android:maxLength="10"
-                android:digits="0123456789"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="16dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtTelefonoAlt"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Teléfono alternativo (opcional)"
+                    android:inputType="phone"
+                    android:maxLength="10"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== DATOS DE DIRECCIÓN ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Datos de residencia"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginBottom="12dp" />
+                android:textColor="@color/white"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
 
-            <EditText
-                android:id="@+id/txtCalle"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCalle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Calle"
-                android:maxLength="50"
-                android:inputType="textCapWords"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtCalle"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Calle"
+                    android:inputType="textCapWords"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtNumero"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutNumero"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Número"
-                android:maxLength="10"
-                android:inputType="text"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtNumero"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Número"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtColonia"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutColonia"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Colonia"
-                android:maxLength="50"
-                android:inputType="textCapWords"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtColonia"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Colonia"
+                    android:inputType="textCapWords"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtAlcaldia"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutAlcaldia"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Alcaldía / Municipio"
-                android:maxLength="50"
-                android:inputType="textCapWords"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtAlcaldia"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Alcaldía / Municipio"
+                    android:inputType="textCapWords"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <EditText
-                android:id="@+id/txtCodigoPostal"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCodigoPostal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Código postal (5 dígitos)"
-                android:inputType="number"
-                android:maxLength="5"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="20dp" />
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <EditText
+                    android:id="@+id/txtCodigoPostal"
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:hint="Código postal (5 dígitos)"
+                    android:inputType="number"
+                    android:maxLength="5"
+                    android:background="@drawable/campos_circulares"
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- ===== DATOS DE SEGURIDAD ===== -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Datos de seguridad"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@android:color/black"
-                android:layout_marginBottom="12dp" />
+                android:textColor="@color/white"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp" />
 
-            <EditText
-                android:id="@+id/txtCorreo"
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutCorreo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Correo electrónico"
-                android:inputType="textEmailAddress"
-                android:textColor="@android:color/black"
-                android:textColorHint="#757575"
-                android:background="@drawable/campos_circulares"
-                android:padding="12dp"
-                android:layout_marginBottom="8dp" />
-
-            <!-- Contraseña con toggle -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp">
-
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
                 <EditText
-                    android:id="@+id/txtContrasena"
+                    android:id="@+id/txtCorreo"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="Contraseña"
-                    android:inputType="textPassword"
-                    android:textColor="@android:color/black"
-                    android:textColorHint="#757575"
+                    android:layout_height="55dp"
+                    android:hint="Correo electrónico"
+                    android:inputType="textEmailAddress"
                     android:background="@drawable/campos_circulares"
-                    android:padding="12dp" />
+                    android:paddingHorizontal="20dp"
+                    android:textColor="@android:color/black" />
+            </com.google.android.material.textfield.TextInputLayout>
 
-                <ImageButton
-                    android:id="@+id/btnToggleContrasena"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ojocontrasena"
-                    android:contentDescription="Mostrar/ocultar contraseña"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
-            </RelativeLayout>
-
-            <!-- Confirmar contraseña con toggle -->
-            <RelativeLayout
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutContrasena"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp">
-
-                <EditText
-                    android:id="@+id/txtConfirmarContrasena"
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <RelativeLayout
                     android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/campos_circulares">
+                    <EditText
+                        android:id="@+id/txtContrasena"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:hint="Contraseña"
+                        android:inputType="textPassword"
+                        android:paddingHorizontal="20dp"
+                        android:textColor="@android:color/black" />
+                    <ImageButton
+                        android:id="@+id/btnToggleContrasena"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_eye_closed"
+                        android:contentDescription="Mostrar u ocultar"
+                        app:tint="@android:color/darker_gray" />
+                </RelativeLayout>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/layoutConfirmarContrasena"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:hintEnabled="false"
+                app:errorEnabled="true"
+                app:errorIconDrawable="@null">
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="55dp"
+                    android:background="@drawable/campos_circulares">
+                    <EditText
+                        android:id="@+id/txtConfirmarContrasena"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@android:color/transparent"
+                        android:hint="Confirmar contraseña"
+                        android:inputType="textPassword"
+                        android:paddingHorizontal="20dp"
+                        android:textColor="@android:color/black" />
+                    <ImageButton
+                        android:id="@+id/btnToggleConfirmarContrasena"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@drawable/ic_eye_closed"
+                        android:contentDescription="Mostrar u ocultar"
+                        app:tint="@android:color/darker_gray" />
+                </RelativeLayout>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="16dp">
+
+                <CheckBox
+                    android:id="@+id/checkTerminos"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="Confirmar contraseña"
-                    android:inputType="textPassword"
-                    android:textColor="@android:color/black"
-                    android:textColorHint="#757575"
-                    android:background="@drawable/campos_circulares"
-                    android:padding="12dp" />
+                    android:buttonTint="@color/white" />
 
-                <ImageButton
-                    android:id="@+id/btnToggleConfirmarContrasena"
-                    android:layout_width="50dp"
-                    android:layout_height="50dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:background="@android:color/transparent"
-                    android:src="@drawable/ojocontrasena"
-                    android:contentDescription="Mostrar/ocultar contraseña"
-                    android:scaleType="centerInside"
-                    android:padding="4dp" />
-            </RelativeLayout>
+                <TextView
+                    android:id="@+id/txtTerminosLink"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Acepto los términos y condiciones de uso"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+            </LinearLayout>
 
-            <!-- BOTÓN CREAR CUENTA -->
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCrearCuenta"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
+                android:layout_marginTop="20dp"
                 android:text="Crear cuenta"
                 android:textStyle="bold"
                 android:textColor="@android:color/black"
-                android:backgroundTint="@color/botonIniciarSesion"
-                android:layout_marginTop="10dp" />
+                android:backgroundTint="@color/colorIntermedio"
+                app:cornerRadius="15dp"
+                android:textAllCaps="false"
+                android:textSize="17sp" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="40dp"/>
 
         </LinearLayout>
-    </ScrollView>
-</RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

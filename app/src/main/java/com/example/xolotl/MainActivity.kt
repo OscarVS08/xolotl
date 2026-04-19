@@ -62,6 +62,19 @@ class MainActivity : AppCompatActivity() {
         recyclerCitas.adapter = adapter
 
         //cargarCitas()
+        // Al tocar el fondo (el ConstraintLayout principal), cerramos menús
+        binding.root.setOnClickListener {
+            if (binding.cardMenuOpciones.visibility == View.VISIBLE ||
+                binding.cardMenuPrincipal.visibility == View.VISIBLE) {
+                ocultarMenus()
+            }
+        }
+
+        // También al tocar el RecyclerView (las citas)
+        binding.recyclerCitas.setOnTouchListener { _, _ ->
+            ocultarMenus()
+            false // false para que el scroll siga funcionando
+        }
     }
 
     override fun onResume() {
@@ -92,69 +105,79 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ========================
-    // MENÚ SUPERIOR DE OPCIONES
+    // MENÚ SUPERIOR (HAMBURGUESA)
     // ========================
     private fun setupMenuButton() {
         binding.btnMenu.setOnClickListener {
-            menuVisible = !menuVisible
-            binding.layoutMenuOpciones.visibility =
-                if (menuVisible) View.VISIBLE else View.GONE
+            // Si el menú principal está abierto, lo cerramos primero
+            binding.cardMenuPrincipal.visibility = View.GONE
+
+            // Toggle del menú de opciones
+            if (binding.cardMenuOpciones.visibility == View.VISIBLE) {
+                binding.cardMenuOpciones.visibility = View.GONE
+            } else {
+                binding.cardMenuOpciones.visibility = View.VISIBLE
+            }
         }
     }
 
     // ========================
     // BOTÓN CENTRAL Y OPCIONES
     // ========================
+// ========================
+// BOTÓN CENTRAL (+) Y OPCIONES
+// ========================
     private fun setupBotonesPrincipales() {
 
-        // Abrir/cerrar menú del botón +
+        // 1. Abrir/cerrar menú del botón + (Lógica de Toggle)
         binding.btnPrincipal.setOnClickListener {
-            binding.layoutMenuPrincipal.visibility =
-                if (binding.layoutMenuPrincipal.visibility == View.GONE)
-                    View.VISIBLE
-                else
-                    View.GONE
+            // Regla de oro: Si el menú de hamburguesa está abierto, lo cerramos
+            if (binding.cardMenuOpciones.visibility == View.VISIBLE) {
+                binding.cardMenuOpciones.visibility = View.GONE
+            }
+
+            // Intercambiamos la visibilidad del menú central
+            if (binding.cardMenuPrincipal.visibility == View.VISIBLE) {
+                binding.cardMenuPrincipal.visibility = View.GONE
+            } else {
+                binding.cardMenuPrincipal.visibility = View.VISIBLE
+            }
         }
 
-        // Opción 1 → Ir a Agregar desparasitaciones
+        // 2. Opción: Agregar desparasitación
         binding.btnCentralOpcion1.setOnClickListener {
-            // Ocultamos el menú para evitar overlays que causan crashes
-            binding.layoutMenuPrincipal.visibility = View.GONE
-
+            binding.cardMenuPrincipal.visibility = View.GONE // Siempre ocultar al picar
             val intent = Intent(this, AgregarDesparasitacionesActivity::class.java)
             startActivity(intent)
         }
 
-        // Opción 2 → Ir a Agregar vacunas
+        // 3. Opción: Agregar vacunas
         binding.btnCentralOpcion2.setOnClickListener {
-            // Ocultamos el menú para evitar overlays que causan crashes
-            binding.layoutMenuPrincipal.visibility = View.GONE
-
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, AgregarVacunasActivity::class.java)
             startActivity(intent)
         }
 
-        // Opción 3 → Ir a Agregar Mascota
+        // 4. Opción: Agregar Mascota
         binding.btnCentralOpcion3.setOnClickListener {
-            // Ocultamos el menú para evitar overlays que causan crashes
-            binding.layoutMenuPrincipal.visibility = View.GONE
-
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, AgregarMascotaActivity::class.java)
             startActivity(intent)
         }
 
-        // Opción 4 → Ir a Agregar citas
+        // 5. Opción: Agendar cita
         binding.btnCentralOpcion4.setOnClickListener {
-            // Ocultamos el menú para evitar overlays que causan crashes
-            binding.layoutMenuPrincipal.visibility = View.GONE
-
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, AgregarCitasActivity::class.java)
             startActivity(intent)
         }
 
-        // Botón emergencia
+        // 6. Botón Emergencia (Mapa Urgencias)
         binding.btnEmergencia.setOnClickListener {
-            binding.layoutMenuOpciones.visibility = View.GONE
+            // Por seguridad, cerramos cualquier menú abierto antes de saltar al mapa
+            binding.cardMenuPrincipal.visibility = View.GONE
+            binding.cardMenuOpciones.visibility = View.GONE
+
             val intent = Intent(this, VisualizarMapaUrgenciasActivity::class.java)
             startActivity(intent)
         }
@@ -165,7 +188,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun notificacionesUsuario(){
         binding.btnOpcion1.setOnClickListener {
-            binding.layoutMenuOpciones.visibility = View.GONE
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, NotificacionesActivity::class.java)
             startActivity(intent)
         }
@@ -176,7 +199,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun editarPerfilUsuario(){
         binding.btnOpcion2.setOnClickListener {
-            binding.layoutMenuOpciones.visibility = View.GONE
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, EditarPerfilActivity::class.java)
             startActivity(intent)
         }
@@ -187,7 +210,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun mostrarMapaNoUrgencias(){
         binding.btnOpcion3.setOnClickListener {
-            binding.layoutMenuOpciones.visibility = View.GONE
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, VisualizarMapaActivity::class.java)
             startActivity(intent)
         }
@@ -198,7 +221,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun editarMascotas(){
         binding.btnOpcion4.setOnClickListener {
-            binding.layoutMenuOpciones.visibility = View.GONE
+            binding.cardMenuPrincipal.visibility = View.GONE
             val intent = Intent(this, MascotasActivity::class.java)
             startActivity(intent)
         }
@@ -209,7 +232,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun setupCerrarSesion() {
         binding.btnOpcion5.setOnClickListener {
-            binding.layoutMenuOpciones.visibility = View.GONE
+            binding.cardMenuOpciones.visibility = View.GONE
             mostrarAlertaCerrarSesion()
         }
     }
@@ -302,5 +325,10 @@ class MainActivity : AppCompatActivity() {
                         }
                 }
             }
+    }
+
+    private fun ocultarMenus() {
+        binding.cardMenuOpciones.visibility = View.GONE
+        binding.cardMenuPrincipal.visibility = View.GONE
     }
 }

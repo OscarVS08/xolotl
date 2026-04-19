@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@drawable/fondo_interfaz"
@@ -7,178 +8,122 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <!-- Texto de bienvenida -->
-    <TextView
-        android:id="@+id/txtTituloLogo"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="70dp"
-        android:text="Hola"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:gravity="center"
-        android:textColor="@color/colorTitulos" />
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardHeader"
+        android:layout_width="0dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="40dp"
+        app:cardBackgroundColor="@color/rectanguloLogo"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.85"
+        app:strokeColor="@color/colorIntermedio"
+        app:strokeWidth="2dp">
 
-    <!-- Tarjetas dinamicas de citas -->
+        <TextView
+            android:id="@+id/txtTituloLogo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="¡Hola, Bienvenido!"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+    </com.google.android.material.card.MaterialCardView>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerCitas"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/txtTituloLogo"
-        android:layout_marginTop="16dp"
-        android:padding="8dp"/>
+        android:contentDescription="Descripcion de citas"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="10dp"
+        android:clipToPadding="false"
+        android:padding="8dp"
+        android:paddingBottom="30dp"
+        android:requiresFadingEdge="vertical"
+        android:fadingEdgeLength="60dp"
+        app:layout_constraintTop_toBottomOf="@id/cardHeader"
+        app:layout_constraintBottom_toTopOf="@id/layoutBarraInferior"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Menú desplegable (inicialmente oculto) -->
-    <LinearLayout
-        android:id="@+id/layoutMenuOpciones"
-        android:layout_width="wrap_content"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMenuOpciones"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/barraInferior"
-        android:layout_alignParentEnd="true"
-        android:layout_marginEnd="20dp"
-        android:orientation="vertical"
-        android:gravity="end"
+        android:layout_marginBottom="10dp"
+        android:layout_marginEnd="25dp"
         android:visibility="gone"
-        android:background="@drawable/fondo_menu"
-        android:elevation="6dp"
-        android:padding="10dp">
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBarraInferior"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/btnOpcion1"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Notificaciones" />
+            android:orientation="vertical"
+            android:padding="6dp">
+            <Button android:id="@+id/btnOpcion1" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Notificaciones" android:textColor="@android:color/black" android:textSize="13sp" android:textAlignment="viewStart" />
+            <Button android:id="@+id/btnOpcion2" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Editar perfil" android:textColor="@android:color/black" android:textSize="13sp" android:textAlignment="viewStart" />
+            <Button android:id="@+id/btnOpcion3" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Clínicas en la zona" android:textColor="@android:color/black" android:textSize="13sp" android:textAlignment="viewStart" />
+            <Button android:id="@+id/btnOpcion4" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Editar mascotas" android:textColor="@android:color/black" android:textSize="13sp" android:textAlignment="viewStart" />
+            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginVertical="4dp"/>
+            <Button android:id="@+id/btnOpcion5" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Cerrar sesión" android:textColor="#E53935" android:textSize="13sp" android:textStyle="bold" android:textAlignment="viewStart" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/btnOpcion2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Editar perfil" />
-
-        <Button
-            android:id="@+id/btnOpcion3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Clinicas en la zona" />
-
-        <Button
-            android:id="@+id/btnOpcion4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Editar mascotas" />
-
-        <Button
-            android:id="@+id/btnOpcion5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Cerrar sesión" />
-    </LinearLayout>
-
-    <!-- Menú para el botón central (+), inicialmente oculto -->
-    <LinearLayout
-        android:id="@+id/layoutMenuPrincipal"
-        android:layout_width="wrap_content"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMenuPrincipal"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/barraInferior"
-        android:layout_centerHorizontal="true"
-        android:orientation="vertical"
-        android:gravity="center"
+        android:layout_marginBottom="10dp"
         android:visibility="gone"
-        android:background="@drawable/fondo_menu"
-        android:elevation="6dp"
-        android:padding="10dp">
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="18dp"
+        app:cardElevation="20dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutBarraInferior"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/btnCentralOpcion1"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Agregar desparasitación"/>
+            android:orientation="vertical"
+            android:padding="6dp">
+            <Button android:id="@+id/btnCentralOpcion1" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Agregar desparasitación" android:textColor="@android:color/black" android:textSize="13sp" />
+            <Button android:id="@+id/btnCentralOpcion2" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Agregar vacuna" android:textColor="@android:color/black" android:textSize="13sp" />
+            <Button android:id="@+id/btnCentralOpcion3" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Agregar mascota" android:textColor="@android:color/black" android:textSize="13sp" />
+            <Button android:id="@+id/btnCentralOpcion4" style="@style/Widget.MaterialComponents.Button.TextButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Agendar cita" android:textColor="@color/moradoSubtitulo" android:textStyle="bold" android:textSize="13sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/btnCentralOpcion2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Agregar vacuna"/>
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/layoutBarraInferior"
+        android:layout_width="0dp"
+        android:layout_height="65dp"
+        android:layout_marginBottom="25dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="25dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.88">
 
-        <Button
-            android:id="@+id/btnCentralOpcion3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Agregar mascota"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:weightSum="3">
+            <ImageButton android:id="@+id/btnEmergencia" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/mapa_blanco" app:tint="@color/botonEmergencia" android:padding="16dp" android:scaleType="centerInside" android:contentDescription="Emergencias"  />
+            <ImageButton android:id="@+id/btnPrincipal" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/mas_morado" android:padding="8dp" android:scaleType="centerInside" android:contentDescription="Acciones rápidas" />
+            <ImageButton android:id="@+id/btnMenu" android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1" android:background="?attr/selectableItemBackgroundBorderless" android:src="@drawable/menu_blanco" app:tint="@color/moradoSubtitulo" android:padding="16dp" android:scaleType="centerInside" android:contentDescription="Perfil" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
 
-        <Button
-            android:id="@+id/btnCentralOpcion4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            style="@style/Widget.AppCompat.Button.Borderless"
-            android:text="Agendar cita" />
-
-    </LinearLayout>
-
-    <!-- Barra inferior con los tres botones -->
-    <LinearLayout
-        android:id="@+id/barraInferior"
-        android:layout_width="match_parent"
-        android:layout_height="80dp"
-        android:layout_alignParentBottom="true"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:weightSum="3"
-        android:paddingHorizontal="20dp"
-        android:paddingVertical="6dp"
-        android:layout_marginBottom="12dp">
-
-        <!-- Botón emergencia -->
-        <ImageButton
-            android:id="@+id/btnEmergencia"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="0.8"
-            android:layout_marginHorizontal="10dp"
-            android:background="@drawable/boton_emergencia"
-            android:src="@drawable/mapa_blanco"
-            android:scaleType="centerInside"
-            android:adjustViewBounds="true"
-            android:padding="1dp"
-            android:contentDescription="Botón de emergencia" />
-
-        <!-- Botón central (+) -->
-        <ImageButton
-            android:id="@+id/btnPrincipal"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="0.8"
-            android:layout_marginStart="75dp"
-            android:layout_marginEnd="75dp"
-            android:layout_marginHorizontal="1dp"
-            android:background="@drawable/boton_mas"
-            android:src="@drawable/mas_morado"
-            android:scaleType="centerInside"
-            android:adjustViewBounds="true"
-            android:padding="6dp"
-            android:contentDescription="Botón más" />
-
-        <!-- Botón menú hamburguesa -->
-        <ImageButton
-            android:id="@+id/btnMenu"
-            android:layout_width="0dp"
-            android:layout_height="50dp"
-            android:layout_weight="0.8"
-            android:layout_marginHorizontal="1dp"
-            android:background="@drawable/boton_hamburguesa"
-            android:src="@drawable/menu_blanco"
-            android:scaleType="centerInside"
-            android:adjustViewBounds="true"
-            android:padding="6dp"
-            android:contentDescription="Botón de menú" />
-    </LinearLayout>
-
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

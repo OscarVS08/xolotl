@@ -3,17 +3,8 @@ package com.example.xolotl.ui.auth
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.InputType
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.TextWatcher
-import android.text.style.ForegroundColorSpan
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import cn.pedant.SweetAlert.SweetAlertDialog
-import com.example.xolotl.MainActivity
 import com.example.xolotl.R
 import com.example.xolotl.data.models.User
 import com.example.xolotl.data.repository.AuthCallback
@@ -21,8 +12,8 @@ import com.example.xolotl.data.repository.AuthRepository
 import com.example.xolotl.databinding.ActivityRegistrarseBinding
 import com.example.xolotl.utils.UiUtils
 import com.example.xolotl.utils.ValidationUtils
-import com.example.xolotl.utils.updateTextColor
 import com.google.firebase.auth.FirebaseAuth
+import androidx.core.widget.addTextChangedListener
 
 class RegistrarseActivity : AppCompatActivity() {
 
@@ -31,19 +22,24 @@ class RegistrarseActivity : AppCompatActivity() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private var mostrarPassword = false
     private var mostrarConfirmPassword = false
-    // Crear un Spannable para el mensaje
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRegistrarseBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        setupValidations()
         setupPasswordToggle()
+        configurarValidacionesTiempoReal()
+
+        // Listener para el link de términos
+        binding.txtTerminosLink.setOnClickListener {
+            UiUtils.showToast(this, "Abriendo términos y condiciones...")
+        }
 
         // --- Botón crear cuenta ---
-        binding.btnCrearCuenta.setOnClickListener { registrarUsuario() }
+        binding.btnCrearCuenta.setOnClickListener {
+            validarFormularioCompleto()
+        }
 
         // --- Olvidaste CURP ---
         binding.txtOlvidasteCurp.setOnClickListener {
@@ -52,228 +48,42 @@ class RegistrarseActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupValidations() {
-        // --- CURP ---
-        binding.txtCurp.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val curp = s.toString().trim()
-                when {
-                    curp.isEmpty() -> {
-                        binding.txtCurp.error = "Campo obligatorio"
-                        binding.txtCurp.updateTextColor(false)
-                    }
-
-                    curp.length < 18 -> {
-                        binding.txtCurp.error = "Faltan caracteres"
-                        binding.txtCurp.updateTextColor(false)
-                    }
-
-                    !ValidationUtils.isValidCURP(curp) -> {
-                        binding.txtCurp.error = "Formato inválido"
-                        binding.txtCurp.updateTextColor(false)
-                    }
-
-                    else -> {
-                        binding.txtCurp.error = null
-                        binding.txtCurp.updateTextColor(true)
-                    }
-                }
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
-        // --- NOMBRE ---
-        binding.txtNombre.addTextChangedListener(simpleValidator(binding.txtNombre) {
-            ValidationUtils.isValidName(it)
-        })
-
-        // --- APELLIDOS ---
-        val apellidoWatcher = object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                listOf(binding.txtApellidoP, binding.txtApellidoM).forEach { field ->
-                    val text = field.text.toString().trim()
-                    if (!ValidationUtils.isValidName(text)) {
-                        field.error = "Solo letras y máx. 50 caracteres"
-                        field.updateTextColor(false)
-                    } else {
-                        field.error = null
-                        field.updateTextColor(true)
-                    }
-                }
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        }
-        binding.txtApellidoP.addTextChangedListener(apellidoWatcher)
-        binding.txtApellidoM.addTextChangedListener(apellidoWatcher)
-
-        // --- TELÉFONOS ---
-        binding.txtTelefono.addTextChangedListener(simpleValidator(binding.txtTelefono) {
-            ValidationUtils.isValidPhone(it)
-        })
-        binding.txtTelefonoAlt.addTextChangedListener(simpleValidator(binding.txtTelefonoAlt) {
-            it.isEmpty() || ValidationUtils.isValidPhone(it)
-        })
-
-        // --- DIRECCIÓN ---
-        listOf(
-            binding.txtCalle,
-            binding.txtNumero,
-            binding.txtColonia,
-            binding.txtAlcaldia
-        ).forEach { field ->
-            field.addTextChangedListener(simpleValidator(field) {
-                ValidationUtils.isValidAddressField(it)
-            })
-        }
-
-        // --- CÓDIGO POSTAL ---
-        binding.txtCodigoPostal.addTextChangedListener(simpleValidator(binding.txtCodigoPostal) {
-            ValidationUtils.isValidPostalCode(it)
-        })
-
-        // --- CORREO ---
-        binding.txtCorreo.addTextChangedListener(simpleValidator(binding.txtCorreo) {
-            ValidationUtils.isValidEmail(it)
-        })
-
-        // --- CONTRASEÑA ---
-        binding.txtContrasena.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val pass = s.toString()
-                val mensaje = when {
-                    pass.length < 8 -> "Al menos 8 caracteres, 1 mayúscula, número y carácter especial"
-                    ValidationUtils.isStrongPassword(pass) -> "Fuerte"
-                    else -> "Media"
-                }
-
-                // Crear Spannable para cambiar el color
-                val spannable = SpannableString(mensaje)
-                val color = ContextCompat.getColor(this@RegistrarseActivity, R.color.black) // o R.color.azul
-                spannable.setSpan(ForegroundColorSpan(color), 0, mensaje.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-                // Asignar al EditText
-                binding.txtContrasena.error = mensaje
-                binding.txtContrasena.updateTextColor(ValidationUtils.isStrongPassword(pass))
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
-
-        // --- CONFIRMAR CONTRASEÑA ---
-        binding.txtConfirmarContrasena.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val confirm = s.toString()
-                val pass = binding.txtContrasena.text.toString()
-                if (confirm != pass) {
-                    binding.txtConfirmarContrasena.error = "No coincide"
-                    binding.txtConfirmarContrasena.updateTextColor(false)
-                } else {
-                    binding.txtConfirmarContrasena.error = null
-                    binding.txtConfirmarContrasena.updateTextColor(true)
-                }
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-
-        binding.btnToggleContrasena.setOnClickListener {
-            mostrarPassword = !mostrarPassword
-            val type = if (mostrarPassword)
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            else
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            binding.txtContrasena.inputType = type
-            binding.txtContrasena.setSelection(binding.txtContrasena.text?.length ?: 0)
-        }
-
-        binding.btnToggleConfirmarContrasena.setOnClickListener {
-            mostrarPassword = !mostrarPassword
-            val type = if (mostrarPassword)
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            else
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-            binding.txtConfirmarContrasena.inputType = type
-            binding.txtConfirmarContrasena.setSelection(binding.txtConfirmarContrasena.text?.length ?: 0)
-        }
-    }
-
-    // --- Botón para mostrar/ocultar contraseña ---
     private fun setupPasswordToggle() {
+        // --- Ojo para Contraseña Principal ---
         binding.btnToggleContrasena.setOnClickListener {
             mostrarPassword = !mostrarPassword
-            val type = if (mostrarPassword)
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            else
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-            binding.txtContrasena.inputType = type
+            if (mostrarPassword) {
+                // MOSTRAR: Texto plano
+                binding.txtContrasena.transformationMethod = android.text.method.HideReturnsTransformationMethod.getInstance()
+                binding.btnToggleContrasena.setImageResource(R.drawable.ic_eye_open)
+            } else {
+                // OCULTAR: Puntos/Asteriscos
+                binding.txtContrasena.transformationMethod = android.text.method.PasswordTransformationMethod.getInstance()
+                binding.btnToggleContrasena.setImageResource(R.drawable.ic_eye_closed)
+            }
+
+            // Mantener el cursor al final del texto
             binding.txtContrasena.setSelection(binding.txtContrasena.text?.length ?: 0)
         }
 
+        // --- Ojo para Confirmar Contraseña ---
         binding.btnToggleConfirmarContrasena.setOnClickListener {
             mostrarConfirmPassword = !mostrarConfirmPassword
-            val type = if (mostrarConfirmPassword)
-                InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            else
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
 
-            binding.txtConfirmarContrasena.inputType = type
+            if (mostrarConfirmPassword) {
+                // MOSTRAR
+                binding.txtConfirmarContrasena.transformationMethod = android.text.method.HideReturnsTransformationMethod.getInstance()
+                binding.btnToggleConfirmarContrasena.setImageResource(R.drawable.ic_eye_open)
+            } else {
+                // OCULTAR
+                binding.txtConfirmarContrasena.transformationMethod = android.text.method.PasswordTransformationMethod.getInstance()
+                binding.btnToggleConfirmarContrasena.setImageResource(R.drawable.ic_eye_closed)
+            }
+
+            // Mantener el cursor al final del texto
             binding.txtConfirmarContrasena.setSelection(binding.txtConfirmarContrasena.text?.length ?: 0)
         }
-    }
-
-    // --- Validar campos vacíos y correo existente antes de registrar ---
-    private fun validarYCreaUsuario() {
-        val campos = listOf(
-            binding.txtCurp, binding.txtNombre, binding.txtApellidoP,
-            binding.txtApellidoM, binding.txtTelefono, binding.txtCalle,
-            binding.txtNumero, binding.txtColonia, binding.txtAlcaldia,
-            binding.txtCodigoPostal, binding.txtCorreo, binding.txtContrasena,
-            binding.txtConfirmarContrasena
-        )
-
-        var todoValido = true
-        campos.forEach { field ->
-            if (field.text.toString().trim().isEmpty()) {
-                field.error = "Campo obligatorio"
-                field.updateTextColor(false)
-                todoValido = false
-            }
-        }
-
-        if (!todoValido) {
-            UiUtils.showToast(this, "Por favor llena todos los campos")
-            return
-        }
-
-        val correo = binding.txtCorreo.text.toString().trim()
-
-        // --- Verificar si el correo ya existe con Firebase ---
-        firebaseAuth.fetchSignInMethodsForEmail(correo)
-            .addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val signInMethods = task.result?.signInMethods ?: emptyList<String>()
-                    if (signInMethods.isNotEmpty()) {
-                        UiUtils.mostrarAlerta(
-                            this,
-                            "Correo existente",
-                            "Este correo ya está registrado",
-                            SweetAlertDialog.WARNING_TYPE
-                        )
-                    } else {
-                        registrarUsuario()
-                    }
-                } else {
-                    UiUtils.showToast(this, "Error al validar el correo")
-                }
-            }
     }
 
     private fun registrarUsuario() {
@@ -399,36 +209,193 @@ class RegistrarseActivity : AppCompatActivity() {
                             finish()
                         }
                     } else {
-                        UiUtils.showToast(this@RegistrarseActivity, "Error al enviar correo de verificación")
+                        UiUtils.showToast(
+                            this@RegistrarseActivity,
+                            "Error al enviar correo de verificación"
+                        )
                     }
                 }
             }
 
             override fun onError(errorMessage: String) {
+                // TRADUCCIÓN DE ERRORES:
+                val mensajeEspanol = when {
+                    // El error que mencionas: Cuenta duplicada
+                    errorMessage.contains("email address is already in use", ignoreCase = true) ->
+                        "Este correo ya está registrado con otra cuenta. Intenta iniciar sesión."
+
+                    // Error de formato (aunque ya lo validamos, Firebase a veces lo lanza)
+                    errorMessage.contains("email address is badly formatted", ignoreCase = true) ->
+                        "El formato del correo electrónico no es válido."
+
+                    // Error de contraseña débil (por si Firebase tiene reglas distintas)
+                    errorMessage.contains("weak password", ignoreCase = true) ->
+                        "La contraseña es muy débil para los estándares de seguridad."
+
+                    // Error de red
+                    errorMessage.contains("network-request-failed", ignoreCase = true) ->
+                        "Error de conexión. Revisa tu internet e inténtalo de nuevo."
+
+                    // Otros errores
+                    else -> "No se pudo crear la cuenta: $errorMessage"
+                }
+
+                // Mostramos la SweetAlert con el mensaje en español
                 UiUtils.mostrarAlerta(
                     this@RegistrarseActivity,
-                    "Error",
-                    "No se pudo crear la cuenta: $errorMessage",
+                    "Error de Registro",
+                    mensajeEspanol,
                     SweetAlertDialog.ERROR_TYPE
                 )
             }
         })
     }
 
-    private fun simpleValidator(field: EditText, rule: (String) -> Boolean) =
-        object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                val text = s.toString().trim()
-                if (!rule(text)) {
-                    field.error = "Campo inválido"
-                    field.updateTextColor(false)
-                } else {
-                    field.error = null
-                    field.updateTextColor(true)
-                }
-            }
+    private fun validarFormularioCompleto() {
+        // 1. Extraer todos los valores
+        val curp = binding.txtCurp.text.toString().trim()
+        val nombre = binding.txtNombre.text.toString().trim()
+        val apeP = binding.txtApellidoP.text.toString().trim()
+        val apeM = binding.txtApellidoM.text.toString().trim()
+        val tel = binding.txtTelefono.text.toString().trim()
+        val calle = binding.txtCalle.text.toString().trim()
+        val num = binding.txtNumero.text.toString().trim()
+        val col = binding.txtColonia.text.toString().trim()
+        val alc = binding.txtAlcaldia.text.toString().trim()
+        val cp = binding.txtCodigoPostal.text.toString().trim()
+        val email = binding.txtCorreo.text.toString().trim()
+        val pass = binding.txtContrasena.text.toString()
+        val confirm = binding.txtConfirmarContrasena.text.toString()
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        // 2. Activar validación visual en los Layouts (Rojo moderno)
+        binding.layoutCurp.error = if (!ValidationUtils.isValidCURP(curp)) "CURP no válida" else null
+        binding.layoutNombre.error = if (!ValidationUtils.isValidName(nombre)) "Nombre inválido" else null
+        binding.layoutApellidoP.error = if (!ValidationUtils.isValidName(apeP)) "Apellido paterno obligatorio" else null
+        binding.layoutApellidoM.error = if (!ValidationUtils.isValidName(apeM)) "Apellido materno obligatorio" else null
+        binding.layoutTelefono.error = if (!ValidationUtils.isValidPhone(tel)) "Teléfono debe ser de 10 dígitos" else null
+
+        // Dirección
+        binding.layoutCalle.error = if (!ValidationUtils.isValidAddressField(calle)) "Calle obligatoria" else null
+        binding.layoutNumero.error = if (num.isEmpty()) "Requerido" else null
+        binding.layoutColonia.error = if (!ValidationUtils.isValidAddressField(col)) "Colonia obligatoria" else null
+        binding.layoutAlcaldia.error = if (!ValidationUtils.isValidAddressField(alc)) "Alcaldía obligatoria" else null
+        binding.layoutCodigoPostal.error = if (!ValidationUtils.isValidPostalCode(cp)) "CP de 5 dígitos" else null
+
+        // Seguridad
+        binding.layoutCorreo.error = if (!ValidationUtils.isValidEmail(email)) "Correo electrónico inválido" else null
+        binding.layoutContrasena.error = if (!ValidationUtils.isStrongPassword(pass)) "Contraseña muy débil" else null
+        binding.layoutConfirmarContrasena.error = if (pass != confirm) "Las contraseñas no coinciden" else null
+
+        // 3. Validar Checkbox de Términos (Sweet Alert si no está marcado)
+        if (!binding.checkTerminos.isChecked) {
+            UiUtils.mostrarAlerta(
+                this,
+                "Términos y Condiciones",
+                "Debes completar los campos y aceptar los términos y condiciones para crear tu cuenta de Xólotl.",
+                SweetAlertDialog.WARNING_TYPE
+            )
+            return
         }
+
+        // 4. Verificación Final: ¿Hay algún error visible?
+        val tieneErrores = listOf(
+            binding.layoutCurp, binding.layoutNombre, binding.layoutApellidoP,
+            binding.layoutApellidoM, binding.layoutTelefono, binding.layoutCalle,
+            binding.layoutNumero, binding.layoutColonia, binding.layoutAlcaldia,
+            binding.layoutCodigoPostal, binding.layoutCorreo, binding.layoutContrasena,
+            binding.layoutConfirmarContrasena
+        ).any { it.error != null }
+
+        if (!tieneErrores) {
+            registrarUsuario() // Procedemos al registro en Firebase
+        } else {
+            UiUtils.mostrarAlerta(
+                this,
+                "Formulario incompleto",
+                "Por favor, revisa los campos marcados en rojo para continuar.",
+                SweetAlertDialog.ERROR_TYPE
+            )
+        }
+    }
+
+    private fun configurarValidacionesTiempoReal() {
+        // --- DATOS PERSONALES ---
+        binding.txtCurp.addTextChangedListener {
+            val s = it.toString().trim()
+            binding.layoutCurp.error = when {
+                s.isEmpty() -> "Campo obligatorio"
+                s.length < 18 -> "Faltan ${18 - s.length} caracteres"
+                !ValidationUtils.isValidCURP(s) -> "Formato de CURP incorrecto"
+                else -> null
+            }
+        }
+
+        binding.txtNombre.addTextChangedListener {
+            binding.layoutNombre.error = if (!ValidationUtils.isValidName(it.toString())) "Solo letras (máx 50)" else null
+        }
+
+        binding.txtApellidoP.addTextChangedListener {
+            binding.layoutApellidoP.error = if (!ValidationUtils.isValidName(it.toString())) "Solo letras" else null
+        }
+
+        binding.txtTelefono.addTextChangedListener {
+            val s = it.toString()
+            binding.layoutTelefono.error = if (s.length < 10) "Deben ser 10 dígitos" else null
+        }
+
+        // --- DIRECCIÓN ---
+        binding.txtCalle.addTextChangedListener {
+            binding.layoutCalle.error = if (it.toString().trim().isEmpty()) "Requerido" else null
+        }
+
+        binding.txtNumero.addTextChangedListener {
+            // Solo aceptara números, aquí validamos que no esté vacío
+            binding.layoutNumero.error = if (it.toString().isEmpty()) "Requerido" else null
+        }
+
+        binding.txtColonia.addTextChangedListener {
+            binding.layoutColonia.error = if (it.toString().trim().isEmpty()) "Requerido" else null
+        }
+
+        binding.txtAlcaldia.addTextChangedListener {
+            binding.layoutAlcaldia.error = if (it.toString().trim().isEmpty()) "Requerido" else null
+        }
+
+        binding.txtCodigoPostal.addTextChangedListener {
+            val s = it.toString()
+            binding.layoutCodigoPostal.error = if (s.length < 5) "CP inválido (5 dígitos)" else null
+        }
+
+
+
+        // --- SEGURIDAD ---
+        binding.txtCorreo.addTextChangedListener {
+            val email = it.toString().trim()
+            binding.layoutCorreo.error = if (email.isNotEmpty() && !ValidationUtils.isValidEmail(email)) "Formato de correo inválido" else null
+        }
+
+        binding.txtContrasena.addTextChangedListener {
+            val s = it.toString()
+            binding.layoutContrasena.error = when {
+                s.isEmpty() -> "Campo obligatorio"
+                s.length < 8 -> "Mínimo 8 caracteres"
+                !s.any { c -> c.isUpperCase() } -> "Debe incluir una Mayúscula"
+                !s.any { c -> c.isDigit() } -> "Debe incluir un Número"
+                !s.any { c -> "@#\$%^&+=!¿?*._-".contains(c) } -> "Debe incluir un carácter especial (@#$.-)"
+                else -> null
+            }
+            // Re-validar confirmación si ya se había escrito algo
+            val confirm = binding.txtConfirmarContrasena.text.toString()
+            if (confirm.isNotEmpty()) {
+                binding.layoutConfirmarContrasena.error = if (s != confirm) "No coinciden" else null
+            }
+        }
+
+        binding.txtConfirmarContrasena.addTextChangedListener {
+            val s = it.toString()
+            val pass = binding.txtContrasena.text.toString()
+            binding.layoutConfirmarContrasena.error = if (s != pass) "Las contraseñas no coinciden" else null
+        }
+    }
+
 }
