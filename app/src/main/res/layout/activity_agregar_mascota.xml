@@ -114,6 +114,23 @@
                             android:inputType="textCapCharacters" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <TextView
+                        android:id="@+id/txtTramitarRuac"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="-8dp"
+                        android:layout_marginBottom="12dp"
+                        android:layout_marginEnd="5dp"
+                        android:padding="5dp"
+                        android:text="¿No conoces su RUAC? Tramítalo aquí"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
+                        android:textStyle="bold|italic"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true" />
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/layoutNombreMascota"
                         android:layout_width="match_parent"
@@ -224,16 +241,25 @@
                             android:focusable="false"/>
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <EditText
-                        android:id="@+id/txtRazaOtro"
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/layoutRazaOtro"
                         android:layout_width="match_parent"
-                        android:layout_height="55dp"
-                        android:hint="Escribe la raza"
+                        android:layout_height="wrap_content"
                         android:visibility="gone"
-                        android:background="@drawable/campos_circulares"
-                        android:paddingHorizontal="15dp"
-                        android:layout_marginBottom="12dp"
-                        android:textColor="@android:color/black" />
+                        app:hintEnabled="false"
+                        app:errorEnabled="true"
+                        app:errorIconDrawable="@null"
+                        android:layout_marginTop="-10dp">
+                        <EditText
+                            android:id="@+id/txtRazaOtro"
+                            android:layout_width="match_parent"
+                            android:layout_height="55dp"
+                            android:hint="Escribe la raza"
+                            android:background="@drawable/campos_circulares"
+                            android:paddingHorizontal="15dp"
+                            android:textColor="@android:color/black"
+                            android:inputType="textCapWords" />
+                    </com.google.android.material.textfield.TextInputLayout>
 
                     <TextView
                         android:id="@+id/txtIdentificarRaza"

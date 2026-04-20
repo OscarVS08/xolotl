@@ -107,7 +107,7 @@ class EditarPerfilActivity : AppCompatActivity() {
         setupFieldValidation(txtTelefonoAlt, ValidationUtils::isValidPhone, "Debe tener 10 dígitos")
 
         setupFieldValidation(txtCalle, ValidationUtils::isValidAddressField, "Texto inválido")
-        setupFieldValidation(txtNumero, ValidationUtils::isValidNumber, "Número inválido")
+        setupFieldValidation(txtNumero, ValidationUtils::isValidPhone, "Número inválido")
         setupFieldValidation(txtColonia, ValidationUtils::isValidAddressField, "Texto inválido")
         setupFieldValidation(txtAlcaldia, ValidationUtils::isValidAddressField, "Texto inválido")
 
