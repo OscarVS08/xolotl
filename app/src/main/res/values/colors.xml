@@ -5,6 +5,7 @@
     <color name="fondoPrincipal">#2C3E92</color>
     <color name="botonIniciarSesion">#5b35b1</color>
     <color name="botonRegistrarse">#c6b7ec</color>
+    <color name="colorIntermedio">#9176cf</color>
     <color name="rectanguloInicioSesion">#5b35b1</color>
     <color name="rectanguloLogo">#c6b7ec</color>
     <color name="enlace">#000000</color>
@@ -13,4 +14,5 @@
     <color name="verde">#4CAF50</color>
     <color name="azul">#2196F3</color>
     <color name="colorTitulos">#2b2254</color>
+    <color name="moradoSubtitulo">#6A1B9A</color>
 </resources>

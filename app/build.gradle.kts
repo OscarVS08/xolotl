@@ -60,6 +60,7 @@ dependencies {
     //Dependencia para Sweet Alert
     implementation("com.github.f0ris.sweetalert:library:1.6.2")
     implementation(libs.play.services.location)
+    implementation(libs.androidx.ink.geometry.android)
     //Dependencias de pruebas
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

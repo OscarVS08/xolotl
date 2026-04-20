@@ -148,4 +148,71 @@ object UiUtils {
             }
             .show()
     }
+
+    /**
+     * Muestra una alerta de confirmación con los detalles de la vacuna antes de guardar en Firebase
+     */
+    fun mostrarConfirmacionVacuna(
+        activity: Activity,
+        nombre: String,
+        marca: String,
+        dosis: String,
+        fecha: String,
+        proximaFecha: String,
+        onConfirm: (() -> Unit)? = null,
+        onCancel: (() -> Unit)? = null
+    ) {
+        val mensaje = "Por favor corrobora los siguientes datos:\n\n" +
+                "• Vacuna: $nombre\n" +
+                "• Marca: $marca\n" +
+                "• Dosis: $dosis\n" +
+                "• Fecha: $fecha\n" +
+                "• Próxima cita: $proximaFecha"
+
+        SweetAlertDialog(activity, SweetAlertDialog.WARNING_TYPE)
+            .setTitleText("Confirmar vacuna")
+            .setContentText(mensaje)
+            .setConfirmText("Registrar")
+            .setCancelText("Cancelar")
+            .setConfirmClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onConfirm?.invoke()
+            }
+            .setCancelClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onCancel?.invoke()
+            }
+            .show()
+    }
+
+    /**
+     * Muestra una alerta de confirmación con los detalles de la cita antes de agendar
+     */
+    fun mostrarConfirmacionCita(
+        activity: Activity,
+        servicio: String,
+        fecha: String,
+        onConfirm: (() -> Unit)? = null,
+        onCancel: (() -> Unit)? = null
+    ) {
+        val mensaje = "Por favor corrobora los datos de la cita:\n\n" +
+                "• Servicio: $servicio\n" +
+                "• Fecha y hora: $fecha\n\n" +
+                "¿Deseas agendar esta cita?"
+
+        SweetAlertDialog(activity, SweetAlertDialog.WARNING_TYPE)
+            .setTitleText("Confirmar Cita")
+            .setContentText(mensaje)
+            .setConfirmText("Agendar")
+            .setCancelText("Cancelar")
+            .setConfirmClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onConfirm?.invoke()
+            }
+            .setCancelClickListener { dialog ->
+                dialog.dismissWithAnimation()
+                onCancel?.invoke()
+            }
+            .show()
+    }
 }

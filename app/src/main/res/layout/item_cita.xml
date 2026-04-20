@@ -1,104 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:orientation="vertical"
-    android:background="@drawable/rectangulosesion"
-    android:padding="12dp"
-    android:layout_margin="8dp">
+    android:layout_margin="8dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:strokeColor="@color/colorIntermedio"
+    app:strokeWidth="1dp">
 
-    <!-- Nombre mascota -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Mascota"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"/>
-
-    <TextView
-        android:id="@+id/txtNombreMascotaCita"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Nombre de la mascota"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="@android:color/black"
-        android:background="@drawable/campos_circulares"
-        android:padding="8dp"
-        android:layout_marginBottom="6dp"/>
-
-    <!-- Servicio -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Servicio"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"/>
-
-    <TextView
-        android:id="@+id/txtServicioCita"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Nombre del servicio"
-        android:textColor="@android:color/black"
-        android:background="@drawable/campos_circulares"
-        android:padding="8dp"
-        android:layout_marginBottom="6dp"/>
-
-    <!-- Fecha -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fecha y hora"
-        android:textSize="12sp"
-        android:textColor="@android:color/darker_gray"/>
-
-    <TextView
-        android:id="@+id/txtFechaHoraCita"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Fecha y hora"
-        android:textColor="@android:color/black"
-        android:background="@drawable/campos_circulares"
-        android:padding="8dp"/>
-
-    <!-- Espacio flexible -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:layout_weight="2"/>
-
-
-    <!-- Botones -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end">
+        android:orientation="vertical"
+        android:padding="12dp"
+        android:background="@drawable/rectangulosesion">
 
-        <ImageButton
-            android:id="@+id/btnEditarCita"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/editar_blanco"
-            android:background="@android:color/transparent"
-            android:scaleType="centerInside"
-            android:contentDescription="Editar cita"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Mascota"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
 
-        <!-- ESPACIO -->
-        <View
-            android:layout_width="60dp"
-            android:layout_height="match_parent"/>
+        <TextView
+            android:id="@+id/txtNombreMascotaCita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/campos_circulares"
+            android:padding="8dp"
+            android:text="Nombre"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
-        <ImageButton
-            android:id="@+id/btnEliminarCita"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/borrar_blanco"
-            android:background="@android:color/transparent"
-            android:scaleType="centerInside"
-            android:contentDescription="Eliminar cita"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Servicio"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/txtServicioCita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/campos_circulares"
+            android:padding="8dp"
+            android:text="Servicio"
+            android:textColor="@android:color/black"
+            android:textSize="13sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fecha y hora"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/txtFechaHoraCita"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/campos_circulares"
+            android:padding="8dp"
+            android:text="Fecha y hora"
+            android:textColor="@android:color/black"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/btnEditarCita"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Editar cita"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/editar_blanco"
+                />
+
+            <View
+                android:layout_width="30dp"
+                android:layout_height="match_parent" />
+
+            <ImageButton
+                android:id="@+id/btnEliminarCita"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Eliminar cita"
+                android:padding="6dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/borrar_morado"
+                app:tint="@android:color/holo_red_light" />
+        </LinearLayout>
     </LinearLayout>
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

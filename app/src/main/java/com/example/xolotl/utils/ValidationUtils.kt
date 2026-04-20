@@ -50,6 +50,19 @@ object ValidationUtils {
         return field.isNotBlank() && field.length <= 50
     }
 
+    // --- NUEVAS VALIDACIONES ---
+
+    // Validar si un campo tiene el mínimo de caracteres (ej. para contraseñas o nombres cortos)
+    fun hasMinLength(text: String, min: Int): Boolean = text.length >= min
+
+    // Validar si dos textos coinciden (para confirmar contraseña)
+    fun doMatches(text1: String, text2: String): Boolean = text1 == text2
+
+    // Validar Número de casa (que no sea solo espacios)
+    fun isValidHouseNumber(number: String): Boolean {
+        return number.isNotBlank() && number.length <= 10
+    }
+
     // Validaciones para mascotas
     fun validarMascota(nombre: String, especie: String, raza: String): Boolean {
         return nombre.isNotEmpty() && especie.isNotEmpty() && raza.isNotEmpty()
@@ -174,23 +187,6 @@ object ValidationUtils {
         return ruac.isNotBlank()
     }
 
-    fun validarDesparasitacionCompleta(
-        metodo: String,
-        nombre: String,
-        marca: String,
-        fecha: String,
-        proximaFecha: String,
-        ruac: String
-    ): Boolean {
-
-        return isValidMetodo(metodo)
-                && isValidMedicamento(nombre)
-                && isValidMarca(marca)
-                && isValidFechaDesparasitacion(fecha)
-                && isValidProximaFecha(proximaFecha)
-                && isValidRuacMascota(ruac)
-    }
-
     fun isFechaPosterior(fecha1: String, fecha2: String): Boolean {
         return try {
             val formato = java.text.SimpleDateFormat("dd/MM/yyyy")
@@ -203,8 +199,8 @@ object ValidationUtils {
     }
 
     // -----------------------------
-// VALIDACIONES VACUNAS
-// -----------------------------
+    // VALIDACIONES VACUNAS
+    // -----------------------------
 
     fun isValidVacunaNombre(nombre: String): Boolean {
         val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{3,40}$")
@@ -254,18 +250,32 @@ object ValidationUtils {
     // -----------------------------
 
     fun isValidServicio(servicio: String): Boolean {
+        // Permite letras, espacios y acentos, entre 3 y 40 caracteres
         val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ\\s]{3,40}$")
         return regex.matches(servicio)
     }
 
     fun isValidHorario(horario: String): Boolean {
+        // Valida formato DD/MM/YYYY HH:mm
         val regex = Regex("^\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}$")
         return regex.matches(horario)
     }
 
+    fun isFechaFutura(fechaHora: String): Boolean {
+        return try {
+            val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+            val fechaCita = sdf.parse(fechaHora)
+            val ahora = java.util.Date()
+            fechaCita?.after(ahora) ?: false
+        } catch (e: Exception) {
+            false
+        }
+    }
+
     fun isValidNotasCita(notas: String): Boolean {
+        // Las notas son opcionales (vacío es válido) pero máximo 200 caracteres y sin caracteres raros
         if (notas.isEmpty()) return true
-        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s,.]{0,200}$")
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s,.\n]{0,200}$")
         return regex.matches(notas)
     }
 }
