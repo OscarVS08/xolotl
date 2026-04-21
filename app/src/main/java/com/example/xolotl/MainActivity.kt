@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        cargarNombreUsuario()
+        //cargarNombreUsuario()
         setupMenuButton()
         setupBotonesPrincipales()
         setupCerrarSesion()
@@ -79,6 +79,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        cargarNombreUsuario()
         cargarCitas()
     }
 
@@ -316,7 +317,7 @@ class MainActivity : AppCompatActivity() {
 
                             // SOLO AQUÍ actualizamos
                             if (consultasPendientes == 0) {
-                                Toast.makeText(this, "Citas cargadas: ${listaCitas.size}", Toast.LENGTH_SHORT).show()
+                                //Toast.makeText(this, "Citas cargadas: ${listaCitas.size}", Toast.LENGTH_SHORT).show()
                                 recyclerCitas.adapter = CitasAdapter(listaCitas, this)
                             }
                         }

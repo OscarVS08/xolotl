@@ -145,7 +145,12 @@ class NotificacionesActivity : AppCompatActivity() {
         val info = AlarmManager.AlarmClockInfo(timeInMillis, pendingIntent)
         alarmManager.setAlarmClock(info, pendingIntent)
 
-        UiUtils.mostrarAlerta(this, "¡Programado!", "Aviso listo para las $txtFechaHoraNotificacion.text", SweetAlertDialog.SUCCESS_TYPE)
+        UiUtils.mostrarAlerta(
+            this,
+            "¡Programado!",
+            "Aviso listo para el ${txtFechaHoraNotificacion.text}",
+            SweetAlertDialog.SUCCESS_TYPE
+        )
     }
 
     private fun crearCanalNotificaciones() {

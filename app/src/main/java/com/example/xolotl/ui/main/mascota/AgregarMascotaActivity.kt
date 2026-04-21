@@ -68,6 +68,13 @@ class AgregarMascotaActivity : AppCompatActivity() {
                 registrarMascota()
             }
         }
+
+        // Listener para abrir el link de identificación de raza
+        binding.txtIdentificarRaza.setOnClickListener {
+            val url = "https://www.snuffalo.com/"
+            val intent = Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url))
+            startActivity(intent)
+        }
     }
 
     private fun setupImagePicker() {
