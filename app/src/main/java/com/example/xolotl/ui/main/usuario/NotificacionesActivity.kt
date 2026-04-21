@@ -1,37 +1,34 @@
 package com.example.xolotl.ui.main.usuario
 
-import android.app.AlarmManager
-import android.app.DatePickerDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
-import android.app.TimePickerDialog
+import android.Manifest
+import android.app.*
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
+import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.xolotl.R
 import com.example.xolotl.utils.EncryptionUtils
+import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
-import android.Manifest
-import android.util.Log
-
+import java.util.*
 
 class NotificacionesActivity : AppCompatActivity() {
 
     private lateinit var spinnerCitas: AutoCompleteTextView
     private lateinit var txtFechaHoraCita: TextView
     private lateinit var txtFechaHoraNotificacion: EditText
-
     private val listaCitas = mutableListOf<String>()
     private val mapaCitas = mutableMapOf<String, String>()
 
@@ -39,262 +36,148 @@ class NotificacionesActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_notificaciones)
 
-        // ============================
-        // REFERENCIAS
-        // ============================
+        // Inicializar vistas
         spinnerCitas = findViewById(R.id.spinnerCitas)
-        // Por defecto NO editable
-        spinnerCitas.keyListener = null
         txtFechaHoraCita = findViewById(R.id.txtFechaHoraCita)
         txtFechaHoraNotificacion = findViewById(R.id.txtFechaHoraNotificacion)
-        txtFechaHoraNotificacion.keyListener = null
 
-        // ============================
-        // CONFIGURACIÓN
-        // ============================
+        // Configuración inicial
         cargarCitas()
-        configurarFechaHoraNotificacion()
-        crearCanal()
-        pedirPermisoNotificaciones()
-
-        spinnerCitas.setOnClickListener {
-            spinnerCitas.showDropDown()
-        }
+        configurarDatePicker()
+        crearCanalNotificaciones()
+        verificarYPedirPermisos()
+        solicitarIgnorarOptimizacionBateria()
 
         spinnerCitas.setOnItemClickListener { parent, _, position, _ ->
-
             val seleccion = parent.getItemAtPosition(position).toString()
-
-            val fechaHora = mapaCitas[seleccion] ?: ""
-
-            txtFechaHoraCita.text = fechaHora
+            txtFechaHoraCita.text = mapaCitas[seleccion] ?: "--"
         }
 
-        val btnGuardar = findViewById<LinearLayout>(R.id.btnGuardarNotificacion)
-
-        btnGuardar.setOnClickListener {
-
-            val fechaHora = txtFechaHoraNotificacion.text.toString()
-
-            if (fechaHora.isEmpty()) {
-                Toast.makeText(this, "Selecciona fecha y hora", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            programarNotificacion(fechaHora)
+        findViewById<LinearLayout>(R.id.btnGuardarNotificacion).setOnClickListener {
+            validarYProgramar()
         }
 
-        // Botón home
-        findViewById<View>(R.id.btnHome).setOnClickListener {
-            finish()
-        }
+        findViewById<View>(R.id.btnHome).setOnClickListener { finish() }
     }
 
-    // ============================
-    // CARGAR CITAS DESDE FIREBASE
-    // ============================
     private fun cargarCitas() {
-
         val uid = FirebaseAuth.getInstance().uid ?: return
         val db = FirebaseFirestore.getInstance()
 
-        listaCitas.clear()
-        mapaCitas.clear()
-
-        db.collection("usuarios")
-            .document(uid)
-            .collection("mascotas")
-            .get()
+        db.collection("usuarios").document(uid).collection("mascotas").get()
             .addOnSuccessListener { mascotas ->
-
+                listaCitas.clear()
+                mapaCitas.clear()
                 for (mascota in mascotas) {
-
-                    val ruac = mascota.id
-                    val nombreMascota = EncryptionUtils.decrypt(
-                        mascota.getString("nombre") ?: ""
-                    )
-
-                    db.collection("usuarios")
-                        .document(uid)
-                        .collection("mascotas")
-                        .document(ruac)
-                        .collection("citas")
-                        .get()
-                        .addOnSuccessListener { citas ->
-
-                            for (doc in citas) {
-
-                                val servicio = EncryptionUtils.decrypt(
-                                    doc.getString("servicio") ?: ""
-                                )
-
-                                val fechaHora = EncryptionUtils.decrypt(
-                                    doc.getString("horario") ?: ""
-                                )
-
-                                val nombreItem = "$nombreMascota - $servicio"
-
-                                listaCitas.add(nombreItem)
-                                mapaCitas[nombreItem] = fechaHora
-                            }
-
-                            val adapter = ArrayAdapter(
-                                this,
-                                android.R.layout.simple_dropdown_item_1line,
-                                listaCitas
-                            )
-
-                            spinnerCitas.setAdapter(adapter)
+                    val nombreM = EncryptionUtils.decrypt(mascota.getString("nombre") ?: "")
+                    mascota.reference.collection("citas").get().addOnSuccessListener { citas ->
+                        for (doc in citas) {
+                            val serv = EncryptionUtils.decrypt(doc.getString("servicio") ?: "")
+                            val hor = EncryptionUtils.decrypt(doc.getString("horario") ?: "")
+                            val item = "$nombreM - $serv"
+                            listaCitas.add(item)
+                            mapaCitas[item] = hor
                         }
+                        val adapter = ArrayAdapter(this, R.layout.item_dropdown, listaCitas)
+                        spinnerCitas.setAdapter(adapter)
+                    }
                 }
             }
     }
 
-    private fun configurarFechaHoraNotificacion() {
-
+    private fun configurarDatePicker() {
         txtFechaHoraNotificacion.setOnClickListener {
-
-            val calendar = Calendar.getInstance()
-
-            DatePickerDialog(
-                this,
-                { _, year, month, day ->
-
-                    TimePickerDialog(
-                        this,
-                        { _, hour, minute ->
-
-                            val fechaHora = String.format(
-                                "%02d/%02d/%04d %02d:%02d",
-                                day,
-                                month + 1,
-                                year,
-                                hour,
-                                minute
-                            )
-
-                            txtFechaHoraNotificacion.setText(fechaHora)
-
-                        },
-                        calendar.get(Calendar.HOUR_OF_DAY),
-                        calendar.get(Calendar.MINUTE),
-                        true
-                    ).show()
-
-                },
-                calendar.get(Calendar.YEAR),
-                calendar.get(Calendar.MONTH),
-                calendar.get(Calendar.DAY_OF_MONTH)
-            ).show()
+            val c = Calendar.getInstance()
+            DatePickerDialog(this, { _, y, m, d ->
+                TimePickerDialog(this, { _, hh, mm ->
+                    val fechaSeleccionada = String.format("%02d/%02d/%04d %02d:%02d", d, m + 1, y, hh, mm)
+                    txtFechaHoraNotificacion.setText(fechaSeleccionada)
+                }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), false).show()
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show()
         }
     }
 
-    private fun crearCanal() {
+    private fun validarYProgramar() {
+        val seleccion = spinnerCitas.text.toString()
+        val fechaStr = txtFechaHoraNotificacion.text.toString()
 
+        if (seleccion.isEmpty() || fechaStr.isEmpty()) {
+            UiUtils.mostrarAlerta(this, "Campos incompletos", "Selecciona una cita y la hora del recordatorio.", SweetAlertDialog.WARNING_TYPE)
+            return
+        }
+
+        val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        val fechaDestino = sdf.parse(fechaStr)
+
+        if (fechaDestino != null && fechaDestino.after(Date())) {
+            programarAlarmaExacta(fechaDestino.time, seleccion)
+        } else {
+            UiUtils.mostrarAlerta(this, "Fecha inválida", "La fecha del recordatorio debe ser posterior a la hora actual.", SweetAlertDialog.ERROR_TYPE)
+        }
+    }
+
+    private fun programarAlarmaExacta(timeInMillis: Long, citaNombre: String) {
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+
+        // Verificar permiso de Alarma Exacta (Android 12+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+            UiUtils.mostrarAlerta(this, "Permiso requerido", "Para garantizar puntualidad, activa el permiso de Alarmas Exactas.", SweetAlertDialog.WARNING_TYPE) {
+                startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
+            }
+            return
+        }
+
+        val intent = Intent(this, NotificacionReceiver::class.java).apply {
+            action = "com.example.xolotl.ACTION_ALARM"
+            putExtra("titulo", "Recordatorio de Xolotl")
+            putExtra("mensaje", "Es momento de: $citaNombre")
+            addFlags(Intent.FLAG_RECEIVER_FOREGROUND)
+        }
+
+        // Request code basado en tiempo para evitar colisiones
+        val requestCode = (timeInMillis / 1000).toInt()
+        val pendingIntent = PendingIntent.getBroadcast(
+            this, requestCode, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        // Usar AlarmClockInfo para prioridad máxima (Despierta el dispositivo)
+        val info = AlarmManager.AlarmClockInfo(timeInMillis, pendingIntent)
+        alarmManager.setAlarmClock(info, pendingIntent)
+
+        UiUtils.mostrarAlerta(this, "¡Programado!", "Aviso listo para las $txtFechaHoraNotificacion.text", SweetAlertDialog.SUCCESS_TYPE)
+    }
+
+    private fun crearCanalNotificaciones() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            val canal = NotificationChannel(
-                "canal_citas",
-                "Recordatorios de citas",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-
+            val canal = NotificationChannel("canal_citas", "Recordatorios de Citas", NotificationManager.IMPORTANCE_HIGH).apply {
+                description = "Alertas de citas veterinarias de Xolotl"
+                enableLights(true)
+                lightColor = Color.argb(255, 156, 39, 176)
+                enableVibration(true)
+                setBypassDnd(true) // Plus: puede saltar "No molestar" si el usuario lo permite
+            }
             val manager = getSystemService(NotificationManager::class.java)
             manager.createNotificationChannel(canal)
         }
     }
 
-    private fun programarNotificacion(fechaHora: String) {
-
-        try {
-
-            val fechaHoraLimpia = fechaHora.trim()
-
-            // Validación estricta del formato
-            val regex = Regex("\\d{2}/\\d{2}/\\d{4} \\d{2}:\\d{2}")
-            if (!regex.matches(fechaHoraLimpia)) {
-                Toast.makeText(this, "Formato inválido", Toast.LENGTH_SHORT).show()
-                return
+    private fun verificarYPedirPermisos() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
             }
-
-            val formato = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-            formato.isLenient = false // clave
-
-            val fecha = formato.parse(fechaHoraLimpia)
-
-            if (fecha == null) {
-                Toast.makeText(this, "Fecha inválida", Toast.LENGTH_SHORT).show()
-                return
-            }
-
-            // Validar que sea futura
-            if (fecha.time <= System.currentTimeMillis()) {
-                Toast.makeText(this, "La fecha debe ser futura", Toast.LENGTH_SHORT).show()
-                return
-            }
-
-            val intent = Intent(this, NotificacionReceiver::class.java)
-            val citaSeleccionada = spinnerCitas.text.toString()
-
-            intent.putExtra(
-                "mensaje",
-                "Recordatorio: $citaSeleccionada"
-            )
-
-            val requestCode = System.currentTimeMillis().toInt()
-
-            val pendingIntent = PendingIntent.getBroadcast(
-                this,
-                requestCode,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-
-            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-
-            // AQUÍ VA LA VALIDACIÓN
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                if (!alarmManager.canScheduleExactAlarms()) {
-
-                    val intentPermiso = Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                    startActivity(intentPermiso)
-
-                    Toast.makeText(this, "Activa permisos de alarmas exactas", Toast.LENGTH_LONG).show()
-                    return
-                }
-            }
-
-            // PROGRAMA LA NOTIFICACIÓN
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                fecha.time,
-                pendingIntent
-            )
-
-            Toast.makeText(this, "Notificación programada", Toast.LENGTH_SHORT).show()
-            Log.d("ALARM", "Programando para: ${fecha.time}")
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-            Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
         }
     }
 
-    private fun pedirPermisoNotificaciones() {
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-
-            if (ContextCompat.checkSelfPermission(
-                    this,
-                    Manifest.permission.POST_NOTIFICATIONS
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                    1001
-                )
+    private fun solicitarIgnorarOptimizacionBateria() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(POWER_SERVICE) as PowerManager
+            if (!pm.isIgnoringBatteryOptimizations(packageName)) {
+                UiUtils.mostrarAlerta(this, "Optimización de batería", "Para recibir avisos sin retrasos, selecciona 'Xolotl' y marca 'Sin restricciones'.", SweetAlertDialog.WARNING_TYPE) {
+                    val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+                    startActivity(intent)
+                }
             }
         }
     }

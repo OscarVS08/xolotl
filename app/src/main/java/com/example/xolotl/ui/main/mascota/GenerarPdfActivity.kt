@@ -1,39 +1,42 @@
 package com.example.xolotl.ui.main.mascota
 
+import android.R.id.italic
 import android.content.Intent
-import android.graphics.Canvas
-import android.graphics.Paint
+import android.graphics.*
 import android.graphics.pdf.PdfDocument
+import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.xolotl.R
+import com.example.xolotl.data.models.Desparasitaciones
+import com.example.xolotl.data.models.Vacunas
+import com.example.xolotl.data.models.Citas // Asegúrate de tener este modelo
 import com.example.xolotl.utils.EncryptionUtils
 import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.io.File
 import java.io.FileOutputStream
-import android.graphics.Color
-import android.graphics.RectF
-import android.graphics.drawable.BitmapDrawable
-import android.widget.ImageView
-import com.example.xolotl.data.models.Desparasitaciones
-import com.example.xolotl.data.models.Vacunas
-
 
 class GenerarPdfActivity : AppCompatActivity() {
 
     private val db = FirebaseFirestore.getInstance()
+    private lateinit var userId: String
+    private lateinit var mascotaId: String
 
+    // UI Referencias
     private lateinit var txtNombre: TextView
     private lateinit var txtRuac: TextView
     private lateinit var txtEspecie: TextView
     private lateinit var txtRaza: TextView
     private lateinit var txtSexo: TextView
-    private lateinit var txtFecha: TextView
+    private lateinit var txtFechaNac: TextView
+    private lateinit var txtFechaAdop: TextView
     private lateinit var txtColor: TextView
     private lateinit var txtPeso: TextView
     private lateinit var txtEstatura: TextView
@@ -43,433 +46,315 @@ class GenerarPdfActivity : AppCompatActivity() {
     private lateinit var txtTelefono: TextView
     private lateinit var txtTelAltU: TextView
     private lateinit var imgFotoMascota: ImageView
+
     private val listaDesparasitaciones = mutableListOf<Desparasitaciones>()
     private val listaVacunas = mutableListOf<Vacunas>()
+    private val listaCitas = mutableListOf<Citas>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_generar_pdf)
 
-        val mascotaId = intent.getStringExtra("docId") ?: return
-        val userId = FirebaseAuth.getInstance().uid ?: return
+        mascotaId = intent.getStringExtra("docId") ?: return
+        userId = FirebaseAuth.getInstance().uid ?: return
 
-        // Referencias UI
-        txtNombre   = findViewById(R.id.txtNombreMascotaTop)
-        txtRuac     = findViewById(R.id.txtRuacTop)
-        txtEspecie  = findViewById(R.id.txtEspecie)
-        txtRaza     = findViewById(R.id.txtRaza)
-        txtSexo     = findViewById(R.id.txtSexo)
-        txtFecha    = findViewById(R.id.txtFechaAdopcion)
-        txtColor    = findViewById(R.id.txtColor)
-        txtPeso     = findViewById(R.id.txtPeso)
+        initViews()
+        cargarDatosMascotaYTablas()
+
+        findViewById<View>(R.id.btnHome).setOnClickListener { finish() }
+        findViewById<View>(R.id.btnGenerarPdf).setOnClickListener { generarPdf() }
+    }
+
+    private fun initViews() {
+        txtNombre = findViewById(R.id.txtNombreMascotaTop)
+        txtRuac = findViewById(R.id.txtRuacTop)
+        txtEspecie = findViewById(R.id.txtEspecie)
+        txtRaza = findViewById(R.id.txtRaza)
+        txtSexo = findViewById(R.id.txtSexo)
+        txtFechaNac = findViewById(R.id.txtFechaNacimiento)
+        txtFechaAdop = findViewById(R.id.txtFechaAdopcion)
+        txtColor = findViewById(R.id.txtColor)
+        txtPeso = findViewById(R.id.txtPeso)
         txtEstatura = findViewById(R.id.txtEstatura)
         txtAlergias = findViewById(R.id.txtAlergias)
-        txtNotas    = findViewById(R.id.txtNotas)
+        txtNotas = findViewById(R.id.txtNotas)
         imgFotoMascota = findViewById(R.id.imgFotoMascotaTop)
-
-
-
-        txtDueno    = findViewById(R.id.txtnombreDueno)
+        txtDueno = findViewById(R.id.txtnombreDueno)
         txtTelefono = findViewById(R.id.txtnumeroTelefonoDueno)
-        txtTelAltU  = findViewById(R.id.txtnumTelAltDuen)
+        txtTelAltU = findViewById(R.id.txtnumTelAltDuen)
+    }
 
-        // Botón home
-        findViewById<View>(R.id.btnHome).setOnClickListener { finish() }
-
-        // Botón GENERAR PDF
-        findViewById<View>(R.id.btnGenerarPdf).setOnClickListener {
-            generarPdf()
-        }
-
-        // --- Cargar datos de la mascota ---
-        db.collection("usuarios")
-            .document(userId)
-            .collection("mascotas")
-            .document(mascotaId)
-            .get()
-            .addOnSuccessListener { doc ->
+    private fun cargarDatosMascotaYTablas() {
+        // 1. Datos principales
+        db.collection("usuarios").document(userId).collection("mascotas").document(mascotaId)
+            .get().addOnSuccessListener { doc ->
                 if (doc.exists()) {
-                    txtNombre.text   = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
-                    //txtRuac.text     = EncryptionUtils.decrypt(doc.getString("ruac") ?: "")
-                    txtRuac.text     = "PHCXA49024"
-                    txtEspecie.text  = EncryptionUtils.decrypt(doc.getString("especie") ?: "")
-                    txtRaza.text     = EncryptionUtils.decrypt(doc.getString("raza") ?: "")
-                    txtSexo.text     = EncryptionUtils.decrypt(doc.getString("sexo") ?: "")
-                    txtFecha.text    = EncryptionUtils.decrypt(doc.getString("fechaAdopcion") ?: "")
-                    txtColor.text    = EncryptionUtils.decrypt(doc.getString("color") ?: "")
-                    txtPeso.text     = EncryptionUtils.decrypt(doc.getString("peso") ?: "")
-                    txtEstatura.text = EncryptionUtils.decrypt(doc.getString("estatura") ?: "")
-                    txtAlergias.text = EncryptionUtils.decrypt(doc.getString("alergias") ?: "")
-                    txtNotas.text    = EncryptionUtils.decrypt(doc.getString("notas") ?: "")
+                    txtNombre.text = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
+                    txtRuac.text = EncryptionUtils.decrypt(doc.getString("ruac") ?: "")
+                    txtEspecie.text = EncryptionUtils.decrypt(doc.getString("especie") ?: "")
+                    txtRaza.text = EncryptionUtils.decrypt(doc.getString("raza") ?: "")
+                    txtSexo.text = EncryptionUtils.decrypt(doc.getString("sexo") ?: "")
+                    txtFechaNac.text = EncryptionUtils.decrypt(doc.getString("fechaNacimiento") ?: "Desconocido")
+                    txtFechaAdop.text = EncryptionUtils.decrypt(doc.getString("fechaAdopcion") ?: "")
+                    txtColor.text = EncryptionUtils.decrypt(doc.getString("color") ?: "")
+                    txtPeso.text = EncryptionUtils.decrypt(doc.getString("peso") ?: "") + " kg"
+                    txtEstatura.text = EncryptionUtils.decrypt(doc.getString("estatura") ?: "") + " cm"
+                    txtAlergias.text = EncryptionUtils.decrypt(doc.getString("alergias") ?: "Ninguna")
+                    txtNotas.text = EncryptionUtils.decrypt(doc.getString("notas") ?: "Sin notas")
 
-                    val fotoCifrada = doc.getString("fotoBase64") ?: ""
-
-                    if (fotoCifrada.isNotEmpty()) {
+                    // Lógica Anti-Crash Foto
+                    val dataFoto = doc.getString("fotoBase64") ?: ""
+                    if (dataFoto.isNotEmpty()) {
                         try {
-                            // 1. Desencriptar para obtener el Base64 original
-                            val fotoBase64 = EncryptionUtils.decrypt(fotoCifrada)
-
-                            // 2. Decodificar Base64 → bytes
+                            val fotoBase64 = try { EncryptionUtils.decrypt(dataFoto) } catch (e: Exception) { dataFoto }
                             val bytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
-
-                            // 3. Convertir a bitmap
-                            val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
-                            // 4. Mostrar en ImageView
+                            val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                             imgFotoMascota.setImageBitmap(bitmap)
-
                         } catch (e: Exception) {
-                            e.printStackTrace()
-                            imgFotoMascota.setImageResource(R.drawable.fondo_logo_circular)
+                            imgFotoMascota.setImageResource(R.drawable.foto_blanco)
                         }
-                    } else {
-                        imgFotoMascota.setImageResource(R.drawable.fondo_logo_circular)
                     }
                 }
             }
 
-
-        db.collection("usuarios")
-            .document(userId)
-            .collection("mascotas")
-            .document(mascotaId)
-            .collection("desparasitaciones")
-            .get()
-            .addOnSuccessListener { result ->
-
+        // 2. Tablas (Vacunas, Desparasitaciones y Citas)
+        db.collection("usuarios").document(userId).collection("mascotas").document(mascotaId)
+            .collection("desparasitaciones").get()
+            .addOnSuccessListener { res ->
                 listaDesparasitaciones.clear()
-
-                for (doc in result) {
-                    val des = doc.toObject(Desparasitaciones::class.java)
-
-                    listaDesparasitaciones.add(
-                        Desparasitaciones(
-                            tipo = EncryptionUtils.decrypt(des.tipo),
-                            nombre = EncryptionUtils.decrypt(des.nombre),
-                            marca = EncryptionUtils.decrypt(des.marca),
-                            fecha = EncryptionUtils.decrypt(des.fecha),
-                            proximaFecha = EncryptionUtils.decrypt(des.proximaFecha),
-                            ruacMascota = des.ruacMascota
-                        )
+                for (d in res) {
+                    val des = d.toObject(Desparasitaciones::class.java)
+                    // Creamos una copia con los datos descifrados
+                    val desDescifrada = des.copy(
+                        tipo = EncryptionUtils.decrypt(des.tipo),
+                        nombre = EncryptionUtils.decrypt(des.nombre),
+                        marca = EncryptionUtils.decrypt(des.marca),
+                        fecha = EncryptionUtils.decrypt(des.fecha),
+                        proximaFecha = EncryptionUtils.decrypt(des.proximaFecha)
                     )
+                    listaDesparasitaciones.add(desDescifrada)
                 }
             }
 
-        db.collection("usuarios")
-            .document(userId)
-            .collection("mascotas")
-            .document(mascotaId)
-            .collection("vacunas")
-            .get()
-            .addOnSuccessListener { result ->
-
+        db.collection("usuarios").document(userId).collection("mascotas").document(mascotaId)
+            .collection("vacunas").get()
+            .addOnSuccessListener { res ->
                 listaVacunas.clear()
-
-                for (doc in result) {
-                    val vac = doc.toObject(Vacunas::class.java)
-
-                    listaVacunas.add(
-                        Vacunas(
-                            nombre = EncryptionUtils.decrypt(vac.nombre),
-                            marca = EncryptionUtils.decrypt(vac.marca),
-                            dosis = EncryptionUtils.decrypt(vac.dosis),
-                            fecha = EncryptionUtils.decrypt(vac.fecha),
-                            proximaFecha = EncryptionUtils.decrypt(vac.proximaFecha),
-                            ruacMascota = vac.ruacMascota
-                        )
+                for (d in res) {
+                    val vac = d.toObject(Vacunas::class.java)
+                    // Creamos una copia con los datos descifrados
+                    val vacDescifrada = vac.copy(
+                        nombre = EncryptionUtils.decrypt(vac.nombre),
+                        marca = EncryptionUtils.decrypt(vac.marca),
+                        dosis = EncryptionUtils.decrypt(vac.dosis),
+                        fecha = EncryptionUtils.decrypt(vac.fecha),
+                        proximaFecha = EncryptionUtils.decrypt(vac.proximaFecha)
                     )
+                    listaVacunas.add(vacDescifrada)
+                }
+            }
+        db.collection("usuarios").document(userId)
+            .collection("mascotas").document(mascotaId)
+            .collection("citas").get()
+            .addOnSuccessListener { res ->
+                listaCitas.clear()
+                for (d in res) {
+                    val cita = d.toObject(Citas::class.java)
+                    // Creamos la copia descifrada
+                    val citaDescifrada = cita.copy(
+                        servicio = EncryptionUtils.decrypt(cita.servicio),
+                        horario = EncryptionUtils.decrypt(cita.horario),
+                        notas = EncryptionUtils.decrypt(cita.notas)
+                    )
+                    listaCitas.add(citaDescifrada)
                 }
             }
 
-        // --- Cargar datos del dueño ---
-        db.collection("usuarios")
-            .document(userId)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (doc.exists()) {
-                    val nombre = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
-                    val apP = EncryptionUtils.decrypt(doc.getString("apellidoP") ?: "")
-                    val apM = EncryptionUtils.decrypt(doc.getString("apellidoM") ?: "")
-
-                    txtDueno.text = "$nombre $apP $apM"
-                    txtTelefono.text = EncryptionUtils.decrypt(doc.getString("telefono") ?: "")
-                    txtTelAltU.text = EncryptionUtils.decrypt(doc.getString("telefonoAlt") ?: "")
-                }
+        // 3. Dueño
+        db.collection("usuarios").document(userId).get().addOnSuccessListener { doc ->
+            if (doc.exists()) {
+                val n = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
+                val p = EncryptionUtils.decrypt(doc.getString("apellidoP") ?: "")
+                val m = EncryptionUtils.decrypt(doc.getString("apellidoM") ?: "")
+                txtDueno.text = "$n $p $m"
+                txtTelefono.text = EncryptionUtils.decrypt(doc.getString("telefono") ?: "")
+                txtTelAltU.text = EncryptionUtils.decrypt(doc.getString("telefonoAlt") ?: "")
             }
+        }
     }
 
-    // ---------------------------------------------------------
-    // ➤ AQUÍ SE GENERA EL PDF Y SE MUESTRA LA ALERTA
-    // ---------------------------------------------------------
     private fun generarPdf() {
         try {
             val pdf = PdfDocument()
-
-            // Tamaño carta: 612 x 792 pt (tipico PDF)
             val pageWidth = 612
             val pageHeight = 792
+            var pageCount = 1
+
+            // --- CONFIGURACIÓN DE PINCEL Y COLORES ---
+            val mainColor = Color.parseColor("#1A237E") // Azul Profundo
+            val accentColor = Color.parseColor("#E8EAF6") // Azul muy claro para fondos
+            val dividerColor = Color.parseColor("#D1D1D1")
+
+            val titlePaint = Paint().apply { color = mainColor; textSize = 24f; isFakeBoldText = true; isAntiAlias = true; textAlign = Paint.Align.CENTER }
+            val headerPaint = Paint().apply { color = mainColor; textSize = 14f; isFakeBoldText = true; isAntiAlias = true }
+            val labelPaint = Paint().apply { color = Color.parseColor("#546E7A"); textSize = 10f; isFakeBoldText = true; isAntiAlias = true }
+            val valuePaint = Paint().apply { color = Color.BLACK; textSize = 11f; isAntiAlias = true }
+            val footerPaint = Paint().apply { color = Color.GRAY; textSize = 9f; isAntiAlias = true; textAlign = Paint.Align.CENTER }
 
             lateinit var page: PdfDocument.Page
             lateinit var canvas: Canvas
-
             var y = 0f
 
             fun addNewPage() {
-                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pdf.pages.size + 1).create()
+                val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageCount++).create()
                 page = pdf.startPage(pageInfo)
                 canvas = page.canvas
-                y = 40f
+
+                // Dibujar un borde decorativo fino a toda la página
+                val margin = 20f
+                val borderPaint = Paint().apply { color = mainColor; style = Paint.Style.STROKE; strokeWidth = 0.5f; alpha = 50 }
+                canvas.drawRect(margin, margin, pageWidth - margin, pageHeight - margin, borderPaint)
+
+                y = 60f
             }
 
             addNewPage()
 
-            // Paints
-            val labelPaint = Paint().apply {
-                color = Color.DKGRAY
-                textSize = 14f
-                isFakeBoldText = true
-            }
-
-            val valuePaint = Paint().apply {
-                color = Color.BLACK
-                textSize = 16f
-            }
-
-            val titlePaint = Paint().apply {
-                color = Color.parseColor("#3F51B5")
-                textSize = 15f
-                isFakeBoldText = true
-                textAlign = Paint.Align.CENTER
-            }
-
-            val dividerPaint = Paint().apply {
-                color = Color.LTGRAY
-                strokeWidth = 2f
-            }
-
-            // Título
-            canvas.drawText("Carnet de Mascota", (pageWidth / 2).toFloat(), y, titlePaint)
+            // 1. ENCABEZADO ELEGANTE
+            canvas.drawText("CARNET DE IDENTIDAD CANINA", (pageWidth / 2).toFloat(), y, titlePaint)
+            y += 10
+            val linePaint = Paint().apply { color = mainColor; strokeWidth = 2.5f }
+            canvas.drawLine(pageWidth * 0.1f, y, pageWidth * 0.9f, y, linePaint)
             y += 40
 
-            // FOTO + NOMBRE + RUAC
-            var bottomOfPhoto = 0f
-            var photoRightX = 0f
-
+            // 2. SECCIÓN DE PERFIL (FOTO Y DATOS PRINCIPALES)
             imgFotoMascota.drawable?.let { drawable ->
                 val bitmap = (drawable as BitmapDrawable).bitmap
 
-                val photoWidth = 180f
-                val photoHeight = 180f
+                // Foto con bordes redondeados
+                val photoRect = RectF(50f, y, 170f, y + 120f)
+                val paintPhoto = Paint().apply { isAntiAlias = true }
 
-                val left = 40f
-                val top = y
+                // Dibujar sombra suave bajo la foto
+                val shadowPaint = Paint().apply { color = Color.BLACK; alpha = 20; maskFilter = BlurMaskFilter(5f, BlurMaskFilter.Blur.NORMAL) }
+                canvas.drawRoundRect(photoRect.left + 3, photoRect.top + 3, photoRect.right + 3, photoRect.bottom + 3, 15f, 15f, shadowPaint)
 
-                val dest = RectF(left, top, left + photoWidth, top + photoHeight)
-                canvas.drawBitmap(bitmap, null, dest, null)
+                canvas.drawBitmap(bitmap, null, photoRect, paintPhoto)
 
-                bottomOfPhoto = top + photoHeight
-                photoRightX = dest.right + 20f
+                // Marco de la foto
+                val framePaint = Paint().apply { color = mainColor; style = Paint.Style.STROKE; strokeWidth = 1.5f }
+                canvas.drawRoundRect(photoRect, 15f, 15f, framePaint)
 
-                // Texto a la derecha de la foto
-                canvas.drawText("Nombre:", photoRightX, top + 30f, labelPaint)
-                canvas.drawText(txtNombre.text.toString(), photoRightX + 120f, top + 30f, valuePaint)
+                val textX = 190f
+                // Nombre de la mascota (Grande)
+                canvas.drawText("NOMBRE DEL EJEMPLAR", textX, y + 15, labelPaint)
+                canvas.drawText(txtNombre.text.toString().uppercase(), textX, y + 40, Paint(valuePaint).apply { textSize = 22f; isFakeBoldText = true; color = mainColor })
 
+                // RUAC
+                canvas.drawText("FOLIO RUAC OFICIAL", textX, y + 75, labelPaint)
+                canvas.drawText(txtRuac.text.toString(), textX, y + 95, Paint(valuePaint).apply { textSize = 14f; letterSpacing = 0.1f })
 
-                canvas.drawText("RUAC:", photoRightX, top + 65f, labelPaint)
-                //canvas.drawText(txtRuac.text.toString(), photoRightX + 120f, top + 65f, valuePaint)
-                canvas.drawText("PHCXA49024", photoRightX + 120f, top + 65f, valuePaint)
-
-                y = bottomOfPhoto + 40f
+                y += 150f
             }
 
-            fun ensureSpace(extra: Float = 40f) {
-                if (y + extra >= pageHeight - 40) {
+            fun checkNewPage(needed: Float) {
+                if (y + needed > pageHeight - 60) {
+                    // Dibujar pie de página antes de cerrar
+                    canvas.drawText("Página ${pageCount - 1} | Sistema Xolotl v2.0", (pageWidth / 2).toFloat(), pageHeight - 35f, footerPaint)
                     pdf.finishPage(page)
                     addNewPage()
                 }
             }
 
-            fun drawField(label: String, value: String) {
-                ensureSpace(50f)
-                canvas.drawText(label, 40f, y, labelPaint)
-                canvas.drawText(value, 200f, y, valuePaint)
-                y += 22
-                canvas.drawLine(30f, y, pageWidth - 30f, y, dividerPaint)
-                y += 20
+            fun drawInfoGrid(label: String, value: String, xPos: Float, currentY: Float) {
+                canvas.drawText(label, xPos, currentY, labelPaint)
+                canvas.drawText(value, xPos, currentY + 18, valuePaint)
             }
 
-            fun drawMultiLine(label: String, text: String) {
-                ensureSpace(80f)
+            // 3. CUADRÍCULA DE INFORMACIÓN (Más limpia que filas largas)
+            checkNewPage(120f)
+            val bgRect = RectF(40f, y, (pageWidth - 40).toFloat(), y + 110f)
+            canvas.drawRoundRect(bgRect, 10f, 10f, Paint().apply { color = accentColor })
 
-                canvas.drawText(label, 40f, y, labelPaint)
-                y += 25
+            y += 25f
+            drawInfoGrid("ESPECIE", txtEspecie.text.toString(), 60f, y)
+            drawInfoGrid("RAZA", txtRaza.text.toString(), 220f, y)
+            drawInfoGrid("SEXO", txtSexo.text.toString(), 400f, y)
 
-                val maxWidth = (pageWidth - 80).toFloat()
-                val words = text.split(" ")
-                var line = ""
+            y += 45f
+            drawInfoGrid("NACIMIENTO", txtFechaNac.text.toString(), 60f, y)
+            drawInfoGrid("PESO / TALLA", "${txtPeso.text} / ${txtEstatura.text}", 220f, y)
+            drawInfoGrid("COLOR", txtColor.text.toString(), 400f, y)
 
-                for (w in words) {
-                    val test = if (line.isEmpty()) w else "$line $w"
-                    if (valuePaint.measureText(test) > maxWidth) {
-                        ensureSpace(30f)
-                        canvas.drawText(line, 60f, y, valuePaint)
-                        y += 22
-                        line = w
-                    } else {
-                        line = test
-                    }
-                }
+            y += 60f
 
-                if (line.isNotEmpty()) {
-                    ensureSpace(30f)
-                    canvas.drawText(line, 60f, y, valuePaint)
-                    y += 22
-                }
-
-                canvas.drawLine(30f, y, pageWidth - 30f, y, dividerPaint)
-                y += 20
-            }
-
-            // CAMPOS
-            drawField("Especie:", txtEspecie.text.toString())
-            drawField("Raza:", txtRaza.text.toString())
-            drawField("Sexo:", txtSexo.text.toString())
-            drawField("Color:", txtColor.text.toString())
-            drawField("Peso:", txtPeso.text.toString())
-            drawField("Estatura:", txtEstatura.text.toString())
-            drawField("Fecha adopción:", txtFecha.text.toString())
-
-            drawField("Dueño:", txtDueno.text.toString())
-            drawField("Tel. dueño:", txtTelefono.text.toString())
-            drawField("Tel. alternativo:", txtTelAltU.text.toString())
-
-            drawMultiLine("Alergias:", txtAlergias.text.toString())
-            drawMultiLine("Notas:", txtNotas.text.toString())
-
-            // Agregando tablas de vacunas y des
-            fun drawTable(headers: List<String>, rows: List<List<String>>) {
-
-                val startX = 40f
-                val tableWidth = pageWidth - 80f
-                val columnWidth = tableWidth / headers.size
-
-                val headerPaint = Paint().apply {
-                    color = Color.WHITE
-                    textSize = 14f
-                    isFakeBoldText = true
-                }
-
-                val cellPaint = Paint().apply {
-                    color = Color.BLACK
-                    textSize = 13f
-                }
-
-                val bgHeaderPaint = Paint().apply {
-                    color = Color.parseColor("#3F51B5")
-                }
-
-                val borderPaint = Paint().apply {
-                    color = Color.BLACK
-                    strokeWidth = 1f
-                    style = Paint.Style.STROKE
-                }
-
-                // =========================
-                // HEADER
-                // =========================
-                ensureSpace(40f)
-
-                var x = startX
-
-                headers.forEach { header ->
-                    canvas.drawRect(x, y - 20f, x + columnWidth, y + 10f, bgHeaderPaint)
-                    canvas.drawText(header, x + 10f, y, headerPaint)
-                    canvas.drawRect(x, y - 20f, x + columnWidth, y + 10f, borderPaint)
-                    x += columnWidth
-                }
-
-                y += 25f
-
-                // =========================
-                // ROWS
-                // =========================
-                for (row in rows) {
-
-                    ensureSpace(30f)
-                    x = startX
-
-                    row.forEach { cell ->
-                        canvas.drawText(cell.take(12), x + 10f, y, cellPaint)
-                        canvas.drawRect(x, y - 20f, x + columnWidth, y + 10f, borderPaint)
-                        x += columnWidth
-                    }
-
-                    y += 25f
-                }
-
+            // 4. TABLAS PROFESIONALES (CON LÓGICA DE CITAS CORREGIDA)
+            fun drawStyledTable(title: String, headers: List<String>, data: List<List<String>>) {
+                checkNewPage(100f)
                 y += 20f
-            }
+                canvas.drawText(title, 40f, y, headerPaint)
+                y += 10f
 
-            // Desparasitaciones
-            ensureSpace(40f)
-            canvas.drawText("Desparasitaciones", 40f, y, titlePaint)
-            y += 30
+                val colWidth = (pageWidth - 80) / headers.size
 
-            if (listaDesparasitaciones.isEmpty()) {
-                drawField("Sin registros", "-")
-            } else {
+                // Header fondo redondeado
+                val headRect = RectF(40f, y, (pageWidth - 40).toFloat(), y + 22)
+                canvas.drawRoundRect(headRect, 5f, 5f, Paint().apply { color = mainColor })
 
-                val headers = listOf("Método", "Nombre", "Marca", "Fecha", "Próxima")
-
-                val rows = listaDesparasitaciones.map {
-                    listOf(
-                        it.tipo,
-                        it.nombre,
-                        it.marca,
-                        it.fecha,
-                        it.proximaFecha
-                    )
+                headers.forEachIndexed { i, h ->
+                    val hPaint = Paint(labelPaint).apply { color = Color.WHITE; textSize = 9f }
+                    canvas.drawText(h, 50f + (i * colWidth), y + 15, hPaint)
                 }
 
-                drawTable(headers, rows)
-            }
+                y += 22f
 
-            // Vacunas
-            ensureSpace(40f)
-            canvas.drawText("Vacunas", 40f, y, titlePaint)
-            y += 30
+                if (data.isEmpty()) {
+                    y += 20f
+                    canvas.drawText("No se registran datos históricos.", 55f, y, Paint(valuePaint).apply {
+                        color = Color.GRAY
+                        typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
+                    })
+                    y += 10f
+                } else {
+                    data.forEachIndexed { index, row ->
+                        checkNewPage(25f)
+                        // Fila cebra (un gris muy leve para alternar)
+                        if (index % 2 != 0) {
+                            canvas.drawRect(40f, y, (pageWidth - 40).toFloat(), y + 20, Paint().apply { color = accentColor; alpha = 120 })
+                        }
 
-            if (listaVacunas.isEmpty()) {
-                drawField("Sin registros", "-")
-            } else {
-
-                val headers = listOf("Nombre", "Marca", "Dosis", "Fecha", "Próxima")
-
-                val rows = listaVacunas.map {
-                    listOf(
-                        it.nombre,
-                        it.marca,
-                        it.dosis,
-                        it.fecha,
-                        it.proximaFecha
-                    )
+                        row.forEachIndexed { i, text ->
+                            // it.horario y it.notas se manejan aquí
+                            val cleanText = if(text.length > 20) text.take(17) + "..." else text
+                            canvas.drawText(cleanText, 50f + (i * colWidth), y + 14, valuePaint)
+                        }
+                        y += 20f
+                    }
                 }
-
-                drawTable(headers, rows)
+                y += 15f
             }
+
+            // --- DIBUJAR LAS SECCIONES ---
+            drawStyledTable("HISTORIAL DE VACUNACIÓN", listOf("VACUNA", "MARCA", "DOSIS", "FECHA", "PRÓX."), listaVacunas.map { listOf(it.nombre, it.marca, it.dosis, it.fecha, it.proximaFecha) })
+
+            drawStyledTable("CONTROL DE PARÁSITOS", listOf("TIPO", "FÁRMACO", "MARCA", "FECHA", "PRÓX."), listaDesparasitaciones.map { listOf(it.tipo, it.nombre, it.marca, it.fecha, it.proximaFecha) })
+
+            // Lógica de Citas corregida con it.horario
+            drawStyledTable("PRÓXIMAS CITAS Y SEGUIMIENTO", listOf("SERVICIO", "FECHA Y HORA", "NOTAS"), listaCitas.map {
+                listOf(it.servicio, it.horario, if(it.notas.isEmpty()) "N/A" else it.notas)
+            })
+
+            // Sello de pie de página final
+            checkNewPage(60f)
+            canvas.drawText("Este documento es generado por la aplicación Xolotl y tiene fines informativos.", (pageWidth / 2).toFloat(), pageHeight - 35f, footerPaint)
 
             pdf.finishPage(page)
 
-            // Guardar PDF
-            val file = File(getExternalFilesDir(null), "CarnetMascota.pdf")
-            val output = FileOutputStream(file)
-            pdf.writeTo(output)
-            output.close()
+            val file = File(getExternalFilesDir(null), "Carnet_${txtNombre.text}_Oficial.pdf")
+            pdf.writeTo(FileOutputStream(file))
             pdf.close()
 
-            UiUtils.mostrarAlertaPdfGenerado(this) {
-                abrirPdfConVisor(file)
-            }
+            UiUtils.mostrarAlertaPdfGenerado(this) { abrirPdfConVisor(file) }
 
         } catch (e: Exception) {
             e.printStackTrace()
@@ -478,25 +363,11 @@ class GenerarPdfActivity : AppCompatActivity() {
     }
 
     private fun abrirPdfConVisor(file: File) {
-        try {
-            val uri = FileProvider.getUriForFile(
-                this,
-                "${applicationContext.packageName}.provider",
-                file
-            )
-
-            val intent = Intent(Intent.ACTION_VIEW).apply {
-                setDataAndType(uri, "application/pdf")
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-            }
-
-            startActivity(intent)
-
-        } catch (e: Exception) {
-            e.printStackTrace()
-
-            UiUtils.mostrarAlertaPdfError(this) {}
+        val uri = FileProvider.getUriForFile(this, "${packageName}.provider", file)
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(uri, "application/pdf")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
+        startActivity(intent)
     }
-
 }

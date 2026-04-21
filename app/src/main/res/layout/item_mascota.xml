@@ -1,83 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="120dp"
-    android:background="@drawable/rectangulosesion"
-    android:padding="16dp"
-    android:layout_marginBottom="16dp">
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardBackgroundColor="@android:color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="6dp"
+    app:strokeColor="@color/colorIntermedio"
+    app:strokeWidth="1dp">
 
-    <!-- Rectángulo amarillo para la foto -->
-    <FrameLayout
-        android:id="@+id/fotoContainer"
-        android:layout_width="80dp"
-        android:layout_height="match_parent"
-        android:background="@drawable/fondo_logo_circular"
-        android:layout_alignParentStart="true">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="120dp"
+        android:background="@drawable/rectangulosesion"
+        android:orientation="horizontal"
+        android:padding="12dp">
 
-        <ImageView
+        <com.google.android.material.imageview.ShapeableImageView
             android:id="@+id/imgMascota"
+            android:layout_width="90dp"
+            android:layout_height="90dp"
+            android:layout_gravity="center_vertical"
+            android:padding="2dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/foto_blanco"
+            app:shapeAppearanceOverlay="@style/CircleImage"
+            app:strokeColor="@color/rectanguloLogo"
+            app:strokeWidth="2dp"
+            android:background="@color/botonRegistrarse" />
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:contentDescription="Foto de la mascota"/>
-    </FrameLayout>
+            android:layout_marginStart="16dp"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
 
-    <!-- Nombre de la mascota -->
-    <TextView
-        android:id="@+id/txtNombreMascotaItem"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Nombre Mascota"
-        android:textColor="@android:color/black"
-        android:textSize="25dp"
-        android:textStyle="bold"
-        android:layout_toEndOf="@id/fotoContainer"
-        android:layout_marginStart="30dp"
-        android:layout_alignTop="@id/fotoContainer"
-        android:layout_marginBottom="12dp"/>
+            <TextView
+                android:id="@+id/txtNombreMascotaItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Nombre Mascota"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="1" />
 
-    <!-- Botones alineados horizontalmente -->
-    <LinearLayout
-        android:id="@+id/btnsContainer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_marginEnd="75dp"
-        android:spacing="8dp"
-        >
+            <TextView
+                android:id="@+id/txtInfoMascotaItem"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Información detallada"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                android:layout_marginTop="2dp"/>
 
-        <!-- Botón eliminar -->
-        <ImageButton
-            android:id="@+id/btnEliminarMascota"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/baseline_delete_24"
-            android:background="@android:color/transparent"
-            android:contentDescription="Eliminar mascota"
-            android:scaleType="fitCenter"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="end|bottom"
+                android:orientation="horizontal">
 
-        <!-- Botón editar -->
-        <ImageButton
-            android:id="@+id/btnEditarMascota"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/baseline_edit_24"
-            android:background="@android:color/transparent"
-            android:contentDescription="Editar mascota"
-            android:scaleType="fitCenter"/>
+                <ImageButton
+                    android:id="@+id/btnEliminarMascota"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/baseline_delete_24"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="#D32F2F"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="Eliminar" />
 
-        <!-- Botón generar PDF -->
-        <ImageButton
-            android:id="@+id/btnPdfMascota"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/baseline_picture_as_pdf_24"
-            android:background="@android:color/transparent"
-            android:contentDescription="Generar PDF de la mascota"
-            android:scaleType="fitCenter"/>
+                <View android:layout_width="8dp" android:layout_height="0dp"/>
+
+                <ImageButton
+                    android:id="@+id/btnEditarMascota"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/baseline_edit_24"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/white"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="Editar" />
+
+                <View android:layout_width="8dp" android:layout_height="0dp"/>
+
+                <ImageButton
+                    android:id="@+id/btnPdfMascota"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/baseline_picture_as_pdf_24"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    app:tint="@color/white"
+                    android:padding="8dp"
+                    android:scaleType="fitCenter"
+                    android:contentDescription="PDF" />
+
+            </LinearLayout>
+        </LinearLayout>
     </LinearLayout>
-
-</RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

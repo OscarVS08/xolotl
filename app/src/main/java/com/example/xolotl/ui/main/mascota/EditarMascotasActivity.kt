@@ -104,9 +104,30 @@ class EditarMascotasActivity : AppCompatActivity() {
                     binding.txtAlergias.setText(alergias)
                     binding.txtNotas.setText(notas)
 
+                    // 4. RAZA --OTRO--
                     actualizarAdapterRaza(especie)
-                    binding.txtRaza.setText(raza, false)
-                    binding.txtColor.setText(color, false)
+                    val listaRazasActual = if (especie == "Perro") razasPerro else razasGato
+
+                    if (listaRazasActual.contains(raza)) {
+                        binding.txtRaza.setText(raza, false)
+                        binding.layoutRazaOtro.visibility = View.GONE
+                    } else {
+                        // Si el valor de la DB no está en la lista, es un valor personalizado
+                        binding.txtRaza.setText("Otro", false)
+                        binding.layoutRazaOtro.visibility = View.VISIBLE
+                        binding.txtRazaOtro.setText(raza)
+                    }
+
+                    // 5. COLOR -- OTRO --
+                    if (colores.contains(color)) {
+                        binding.txtColor.setText(color, false)
+                        binding.layoutOtroColor.visibility = View.GONE
+                    } else {
+                        // Si el color no está en la lista predefinida
+                        binding.txtColor.setText("Otro", false)
+                        binding.layoutOtroColor.visibility = View.VISIBLE
+                        binding.txtOtroColor.setText(color)
+                    }
 
                     // Lógica Anti-Crash Foto
                     val dataFoto = doc.getString("fotoBase64") ?: ""

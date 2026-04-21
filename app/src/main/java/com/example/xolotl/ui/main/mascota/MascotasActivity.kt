@@ -1,58 +1,63 @@
 package com.example.xolotl.ui.main.mascota
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import cn.pedant.SweetAlert.SweetAlertDialog
 import com.example.xolotl.R
 import com.example.xolotl.data.models.Mascotas
 import com.example.xolotl.databinding.ActivityMascotasBinding
 import com.example.xolotl.utils.EncryptionUtils
+import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
-
 
 class MascotasActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMascotasBinding
-    private lateinit var containerMascotas: LinearLayout
-    private lateinit var txtSinMascotas: TextView
     private val db = FirebaseFirestore.getInstance()
+    private val userId = FirebaseAuth.getInstance().uid
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_mascotas)
+        binding = ActivityMascotasBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        containerMascotas = findViewById(R.id.containerMascotas)
-        txtSinMascotas = findViewById(R.id.txtSinMascotas)
-
+        // Usamos ViewBinding para los elementos principales
         cargarMascotas()
 
-        // Botón Home
-        findViewById<View>(R.id.btnHome).setOnClickListener {
-            finish()
-        }
+        binding.btnHome.setOnClickListener { finish() }
+    }
+
+    // PUNTO 3: Actualizar al regresar
+    // onResume se ejecuta cada vez que la pantalla vuelve a estar al frente
+    override fun onResume() {
+        super.onResume()
+        cargarMascotas()
     }
 
     private fun cargarMascotas() {
-        val userId = FirebaseAuth.getInstance().uid ?: return
+        val uid = userId ?: return
 
         db.collection("usuarios")
-            .document(userId)
+            .document(uid)
             .collection("mascotas")
             .get()
             .addOnSuccessListener { documents ->
+                binding.containerMascotas.removeAllViews() // Limpiamos para evitar duplicados al recargar
+
                 if (documents.isEmpty) {
-                    txtSinMascotas.visibility = View.VISIBLE
-                    containerMascotas.visibility = View.GONE
+                    binding.txtSinMascotas.visibility = View.VISIBLE
+                    binding.scrollMascotas.visibility = View.GONE
                 } else {
-                    txtSinMascotas.visibility = View.GONE
-                    containerMascotas.visibility = View.VISIBLE
+                    binding.txtSinMascotas.visibility = View.GONE
+                    binding.scrollMascotas.visibility = View.VISIBLE
 
                     for (doc in documents) {
                         val mascota = doc.toObject(Mascotas::class.java)
@@ -61,16 +66,14 @@ class MascotasActivity : AppCompatActivity() {
                 }
             }
             .addOnFailureListener { e ->
-                txtSinMascotas.visibility = View.VISIBLE
-                containerMascotas.visibility = View.GONE
-                txtSinMascotas.text = "Error al cargar mascotas"
-                e.printStackTrace()
+                binding.txtSinMascotas.text = "Error al cargar mascotas"
+                binding.txtSinMascotas.visibility = View.VISIBLE
             }
     }
 
     private fun agregarTarjetaMascota(mascota: Mascotas, docId: String) {
         val inflater = LayoutInflater.from(this)
-        val itemView = inflater.inflate(R.layout.item_mascota, containerMascotas, false)
+        val itemView = inflater.inflate(R.layout.item_mascota, binding.containerMascotas, false)
 
         val txtNombre = itemView.findViewById<TextView>(R.id.txtNombreMascotaItem)
         val imgMascota = itemView.findViewById<ImageView>(R.id.imgMascota)
@@ -78,80 +81,88 @@ class MascotasActivity : AppCompatActivity() {
         val btnEditar = itemView.findViewById<ImageButton>(R.id.btnEditarMascota)
         val btnPdf = itemView.findViewById<ImageButton>(R.id.btnPdfMascota)
 
-        // Desencriptar los datos antes de mostrarlos
         txtNombre.text = EncryptionUtils.decrypt(mascota.nombre)
 
-        // FOTO EN BASE64 CIFRADA
-        val fotoCifrada = mascota.fotoBase64
-
-        if (fotoCifrada.isNotEmpty()) {
+        // PUNTO 1: Lógica híbrida para fotos (Cifrada o Base64 directo)
+        val fotoData = mascota.fotoBase64
+        if (fotoData.isNotEmpty()) {
             try {
-                // 1. Desencriptar
-                val fotoBase64 = EncryptionUtils.decrypt(fotoCifrada)
+                // Intentamos descifrar, si falla asumimos que es Base64 puro
+                val base64Limpio = try {
+                    EncryptionUtils.decrypt(fotoData)
+                } catch (e: Exception) {
+                    fotoData
+                }
 
-                // 2. Decodificar Base64 → bytes
-                val bytes = android.util.Base64.decode(fotoBase64, android.util.Base64.DEFAULT)
-
-                // 3. Convertir a Bitmap
-                val bitmap = android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-
+                val bytes = android.util.Base64.decode(base64Limpio, android.util.Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
                 imgMascota.setImageBitmap(bitmap)
-
             } catch (e: Exception) {
-                e.printStackTrace()
-                imgMascota.setImageResource(R.drawable.fondo_logo_circular)
+                imgMascota.setImageResource(R.drawable.foto_blanco)
             }
-        } else {
-            imgMascota.setImageResource(R.drawable.fondo_logo_circular)
         }
 
-        // Listeners de botones
+        // Listeners
         btnEliminar.setOnClickListener {
-            eliminarMascota(docId)
+            confirmarEliminacion(docId, txtNombre.text.toString())
         }
 
         btnEditar.setOnClickListener {
             val intent = Intent(this, EditarMascotasActivity::class.java)
-
-            // Enviar el ID de la mascota
             intent.putExtra("docId", docId)
-
-            // Si quieres enviar datos de la mascota desencriptados, también puedes:
-            intent.putExtra("nombreMascota", EncryptionUtils.decrypt(mascota.nombre))
-
             startActivity(intent)
         }
 
         btnPdf.setOnClickListener {
             val intent = Intent(this, GenerarPdfActivity::class.java)
-
-            // Enviar el ID de la mascota
             intent.putExtra("docId", docId)
-
-            // Si quieres enviar datos de la mascota desencriptados, también puedes:
-            intent.putExtra("nombreMascota", EncryptionUtils.decrypt(mascota.nombre))
-
             startActivity(intent)
         }
 
-
-        containerMascotas.addView(itemView)
+        binding.containerMascotas.addView(itemView)
     }
 
-    private fun eliminarMascota(docId: String) {
-        val userId = FirebaseAuth.getInstance().uid ?: return
+    // PUNTO 2: Confirmación y Eliminación Recursiva
+    private fun confirmarEliminacion(docId: String, nombre: String) {
+        UiUtils.mostrarAlertaCerrarSesion(
+            this,
+            "¿Eliminar a $nombre?",
+            "Esta acción borrará permanentemente a la mascota, sus vacunas, citas y desparasitaciones.",
+            SweetAlertDialog.WARNING_TYPE,
+            "Eliminar",
+            "Cancelar",
+            onConfirm = {
+                eliminarTodoRastroMascota(docId)
+            }
+        )
+    }
 
-        db.collection("usuarios")
-            .document(userId)
-            .collection("mascotas")
-            .document(docId)
-            .delete()
-            .addOnSuccessListener {
-                containerMascotas.removeAllViews()
-                cargarMascotas()
+    private fun eliminarTodoRastroMascota(docId: String) {
+        val uid = userId ?: return
+        val mascotaRef = db.collection("usuarios").document(uid).collection("mascotas").document(docId)
+
+        // En Firestore, borrar un documento NO borra sus subcolecciones automáticamente.
+        // Hay que borrar las subcolecciones primero o al mismo tiempo.
+        val subcolecciones = listOf("vacunas", "desparasitaciones", "citas")
+
+        val pDialog = SweetAlertDialog(this, SweetAlertDialog.PROGRESS_TYPE)
+        pDialog.titleText = "Eliminando..."
+        pDialog.show()
+
+        var completados = 0
+        for (sub in subcolecciones) {
+            mascotaRef.collection(sub).get().addOnSuccessListener { docs ->
+                for (d in docs) { d.reference.delete() }
+                completados++
+                if (completados == subcolecciones.size) {
+                    // Una vez borradas las subcolecciones, borramos la mascota
+                    mascotaRef.delete().addOnSuccessListener {
+                        pDialog.dismissWithAnimation()
+                        UiUtils.mostrarAlerta(this, "Eliminado", "La mascota y sus datos han sido borrados", SweetAlertDialog.SUCCESS_TYPE)
+                        cargarMascotas() // Recargar lista
+                    }
+                }
             }
-            .addOnFailureListener { e ->
-                e.printStackTrace()
-            }
+        }
     }
 }
