@@ -24,7 +24,11 @@ class AgregarCitasActivity : AppCompatActivity() {
     private val repository = CitasRepository()
     private val listaNombresMascotas = mutableListOf<String>()
     private val mapaMascotas = mutableMapOf<String, String>()
-    private var ruacSeleccionado: String = ""
+    // Mantenemos dos mapas: uno para lo que ve el usuario y otro para la ruta de Firebase
+    private val mapaRuacRealVisual = mutableMapOf<String, String>() // Nombre -> RUAC (Cifrado en DB)
+    private val mapaDocIdFirebase = mutableMapOf<String, String>()  // Nombre -> ID del Documento
+
+    private var idMascotaSeleccionada: String = "" // Este será el doc.id para la subcolección
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,14 +56,17 @@ class AgregarCitasActivity : AppCompatActivity() {
     }
 
     private fun configurarEstructuraCampos() {
-        // Configuramos el comportamiento del spinner de mascotas UNA SOLA VEZ
         binding.spinnerMascota.apply {
-            threshold = 1
             keyListener = null
             setOnItemClickListener { parent, _, position, _ ->
                 val nombre = parent.getItemAtPosition(position).toString()
-                ruacSeleccionado = mapaMascotas[nombre] ?: ""
-                binding.txtRuac.setText(ruacSeleccionado)
+
+                // 1. Mostramos el RUAC real desencriptado al usuario
+                binding.txtRuac.setText(mapaRuacRealVisual[nombre])
+
+                // 2. Guardamos el ID del documento para la ruta de Firebase
+                idMascotaSeleccionada = mapaDocIdFirebase[nombre] ?: ""
+
                 binding.layoutMascota.error = null
             }
             setOnClickListener { showDropDown() }
@@ -98,19 +105,23 @@ class AgregarCitasActivity : AppCompatActivity() {
         FirebaseFirestore.getInstance().collection("usuarios").document(uid).collection("mascotas").get()
             .addOnSuccessListener { result ->
                 listaNombresMascotas.clear()
-                mapaMascotas.clear()
+                mapaRuacRealVisual.clear()
+                mapaDocIdFirebase.clear()
+
                 for (doc in result) {
                     val nombre = EncryptionUtils.decrypt(doc.getString("nombre") ?: "")
+                    val ruacRealCifrado = doc.getString("ruac") ?: ""
+                    val ruacDesencriptado = EncryptionUtils.decrypt(ruacRealCifrado)
+
                     listaNombresMascotas.add(nombre)
-                    mapaMascotas[nombre] = doc.id
+
+                    // Llenamos los mapas
+                    mapaRuacRealVisual[nombre] = ruacDesencriptado
+                    mapaDocIdFirebase[nombre] = doc.id // Usamos el ID del documento como referencia
                 }
 
-                // CAMBIO CLAVE: Forzamos el layout y desactivamos el filtro
                 val adapter = ArrayAdapter(this, R.layout.item_dropdown, listaNombresMascotas)
                 binding.spinnerMascota.setAdapter(adapter)
-
-                // Esto evita que se "sobreponga" o se vea remarcado al abrirlo
-                binding.spinnerMascota.setText(binding.spinnerMascota.text.toString(), false)
             }
     }
 
@@ -155,8 +166,9 @@ class AgregarCitasActivity : AppCompatActivity() {
         val otroServicio = binding.txtOtroServicio.text.toString().trim()
         val fechaHora = binding.txtFechaHora.text.toString().trim()
         val notas = binding.txtNotas.text.toString().trim()
+        val nombreMascota = binding.spinnerMascota.text.toString()
 
-        binding.layoutMascota.error = if (ruacSeleccionado.isEmpty()) "Selecciona una mascota" else null
+        binding.layoutMascota.error = if (idMascotaSeleccionada.isEmpty()) "Selecciona una mascota" else null
         binding.layoutServicio.error = if (servicio.isEmpty()) "Obligatorio" else null
         if (servicio.isEmpty()) {
             binding.layoutServicio.error = "Campo obligatorio"
@@ -186,26 +198,26 @@ class AgregarCitasActivity : AppCompatActivity() {
             activity = this,
             servicio = servicio,
             fecha = fechaHora,
-            onConfirm = { guardarCita(servicio, fechaHora, notas) }
+            onConfirm = { guardarCita(servicio, fechaHora, notas, nombreMascota) }
         )
     }
 
-    private fun guardarCita(servicio: String, fechaHora: String, notas: String) {
+    private fun guardarCita(servicio: String, fechaHora: String, notas: String, nombreMascota: String) {
         val cita = Citas(
             servicio = EncryptionUtils.encrypt(servicio),
             horario = EncryptionUtils.encrypt(fechaHora),
             notas = EncryptionUtils.encrypt(notas),
-            ruacMascota = ruacSeleccionado
+            ruacMascota = idMascotaSeleccionada, // Guardamos el ID del doc para la ruta
+            nombreMascota = EncryptionUtils.encrypt(nombreMascota) // Opcional: Cifrar nombre en la cita
         )
 
-        repository.registrarCita(ruacSeleccionado, cita,
+        // Usamos el ID del documento para que el repositorio sepa dónde escribir
+        repository.registrarCita(idMascotaSeleccionada, cita,
             onSuccess = {
-                UiUtils.mostrarAlerta(this, "¡Éxito!", "Cita registrada correctamente", SweetAlertDialog.SUCCESS_TYPE) {
-                    finish()
-                }
+                UiUtils.mostrarAlerta(this, "¡Éxito!", "Cita registrada", SweetAlertDialog.SUCCESS_TYPE) { finish() }
             },
             onError = {
-                UiUtils.mostrarAlerta(this, "Error", "No se pudo agendar la cita", SweetAlertDialog.ERROR_TYPE)
+                UiUtils.mostrarAlerta(this, "Error", "No se pudo agendar", SweetAlertDialog.ERROR_TYPE)
             }
         )
     }

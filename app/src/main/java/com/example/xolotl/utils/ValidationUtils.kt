@@ -77,8 +77,10 @@ object ValidationUtils {
     }
 
     fun isValidPetName(name: String): Boolean {
-        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{1,30}$")
-        return regex.matches(name)
+        val trimmed = name.trim()
+        if (trimmed.length < 2) return false
+        val regex = Regex("^[A-Za-zÁÉÍÓÚáéíóúÑñ0-9\\s]{2,30}$")
+        return regex.matches(trimmed)
     }
 
     fun isValidPetSpecies(species: String): Boolean {
@@ -95,18 +97,29 @@ object ValidationUtils {
     }
 
     fun isValidDate(date: String): Boolean {
+        if (date == "Desconozco dato") return true // Opción válida ahora
         val regex = Regex("^\\d{2}/\\d{2}/\\d{4}$")
         return regex.matches(date)
     }
 
-    fun isValidNumber(value: String): Boolean {
-        val regex = Regex("^\\d{1,3}(\\.\\d{1,2})?\$") // 1–999, con decimales opcionales
-        return regex.matches(value)
+    // --- VALIDACIONES CON LÍMITES POR ESPECIE ---
+
+    fun isValidPesoPorEspecie(value: String, especie: String): Boolean {
+        val peso = value.toDoubleOrNull() ?: return false
+        return when (especie) {
+            "Perro" -> peso in 0.1..100.0
+            "Gato" -> peso in 0.1..15.0
+            else -> peso in 0.1..50.0 // Valor por defecto si no hay especie
+        }
     }
 
-    fun isValidHeight(value: String): Boolean {
-        val regex = Regex("^\\d{1,3}(\\.\\d{1,2})?$")
-        return regex.matches(value)
+    fun isValidEstaturaPorEspecie(value: String, especie: String): Boolean {
+        val estatura = value.toDoubleOrNull() ?: return false
+        return when (especie) {
+            "Perro" -> estatura in 5.0..110.0
+            "Gato" -> estatura in 5.0..50.0
+            else -> estatura in 5.0..80.0
+        }
     }
 
     fun isValidColor(color: String): Boolean {
@@ -126,31 +139,18 @@ object ValidationUtils {
         return regex.matches(text)
     }
 
-    fun validarMascotaCompleta(
-        ruac: String,
-        nombre: String,
-        fecha: String,
-        especie: String,
-        raza: String,
-        color: String,
-        sexo: String,
-        peso: String,
-        estatura: String,
-        alergias: String,
-        notas: String
-    ): Boolean {
+    fun esFechaPosterior(fechaNac: String, fechaAdop: String): Boolean {
+        if (fechaNac == "Desconozco dato" || fechaAdop == "Desconozco dato") return true
 
-        return isValidRuac(ruac)
-                && isValidPetName(nombre)
-                && isValidDate(fecha)
-                && isValidPetSpecies(especie)
-                && isValidPetRace(raza)
-                && isValidColor(color)
-                && isValidPetSex(sexo)
-                && isValidNumber(peso)
-                && isValidHeight(estatura)
-                && isValidAlergia(alergias)
-                && isValidNotas(notas)
+        val sdf = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
+        return try {
+            val dateNac = sdf.parse(fechaNac)
+            val dateAdop = sdf.parse(fechaAdop)
+            // La adopción debe ser igual o después del nacimiento
+            !dateAdop.before(dateNac)
+        } catch (e: Exception) {
+            false
+        }
     }
 
     // -----------------------------
@@ -226,23 +226,6 @@ object ValidationUtils {
         if (fecha.isEmpty()) return true // opcional
         val regex = Regex("^\\d{2}/\\d{2}/\\d{4}$")
         return regex.matches(fecha)
-    }
-
-    fun validarVacunaCompleta(
-        nombre: String,
-        marca: String,
-        dosis: String,
-        fecha: String,
-        proximaFecha: String,
-        ruac: String
-    ): Boolean {
-
-        return isValidVacunaNombre(nombre)
-                && isValidVacunaMarca(marca)
-                && isValidDosis(dosis)
-                && isValidFechaVacuna(fecha)
-                && isValidProximaFechaVacuna(proximaFecha)
-                && isValidRuacMascota(ruac)
     }
 
     // -----------------------------

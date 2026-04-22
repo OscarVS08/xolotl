@@ -33,7 +33,8 @@ class RegistrarseActivity : AppCompatActivity() {
 
         // Listener para el link de términos
         binding.txtTerminosLink.setOnClickListener {
-            UiUtils.showToast(this, "Abriendo términos y condiciones...")
+            val intent = Intent(this, TerminosActivity::class.java)
+            startActivity(intent)
         }
 
         // --- Botón crear cuenta ---

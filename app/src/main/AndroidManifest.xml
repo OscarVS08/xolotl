@@ -99,5 +99,8 @@
         <!--  Notificaciones  -->
         <receiver android:name=".ui.main.usuario.NotificacionReceiver" android:exported="true"/>
 
+        <!-- Terminos y condiciones -->
+        <activity android:name=".ui.auth.TerminosActivity" />
+
     </application>
 </manifest>
