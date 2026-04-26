@@ -67,6 +67,25 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.3.1")
+    // --- INFRAESTRUCTURA DE PRUEBAS UNITARIAS (Carpeta 'test') ---
+    testImplementation("junit:junit:4.13.2")
+    // Mockito para simular objetos de Firebase
+    testImplementation("org.mockito:mockito-core:5.5.0")
+    // Soporte de Mockito para Kotlin (evita errores de nullability)
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+    // Para probar lógica que use hilos o corrutinas
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+
+    // --- INFRAESTRUCTURA DE PRUEBAS DE INTEGRACIÓN/UI (Carpeta 'androidTest') ---
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    // Soporte para probar RecyclerViews y DatePickers
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    // Reglas de JUnit para lanzar Activities automáticamente
+    androidTestImplementation("androidx.test:rules:1.5.0")
+    androidTestImplementation("androidx.test:runner:1.5.2")
+    // Mockito para Android (necesario si quieres mocks dentro del emulador)
+    androidTestImplementation("org.mockito:mockito-android:5.5.0")
 }
 
 

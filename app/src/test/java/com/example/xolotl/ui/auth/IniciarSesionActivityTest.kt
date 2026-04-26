@@ -7,7 +7,7 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.Mockito.*
 
-class IniciarSesionAcivityTest {
+class IniciarSesionActivityTest {
 
     private lateinit var mockAuthRepo: AuthRepository
 

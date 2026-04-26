@@ -25,17 +25,23 @@ import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.example.xolotl.utils.EncryptionUtils
+import android.app.Dialog
+import android.widget.ArrayAdapter
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var auth: FirebaseAuth
-    private var menuVisible = false
+    //private var menuVisible = false
 
     // Variables para mostrar las tarjetas de citas
     private lateinit var recyclerCitas: RecyclerView
     private val listaCitas = mutableListOf<Citas>()
     private lateinit var adapter: CitasAdapter
+    private var countEasterEgg = 0
+    private var lastClickTime: Long = 0
+    private val listaCitasCompleta = mutableListOf<Citas>() // Respaldo de TODO
+    private var mascotaSeleccionadaFiltro: String = "Todas"
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,11 +59,11 @@ class MainActivity : AppCompatActivity() {
         notificacionesUsuario()
         editarPerfilUsuario()
         mostrarMapaNoUrgencias()
+        setupEasterEgg()
 
         // Para las tarjetas de citas
         recyclerCitas = findViewById(R.id.recyclerCitas)
         recyclerCitas.layoutManager = GridLayoutManager(this, 2)
-
         adapter = CitasAdapter(listaCitas, this)
         recyclerCitas.adapter = adapter
 
@@ -81,6 +87,7 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         cargarNombreUsuario()
         cargarCitas()
+        configurarFiltrosUI()
     }
 
     // ========================
@@ -263,73 +270,177 @@ class MainActivity : AppCompatActivity() {
 
     // Funcion para mostrar las citas
     private fun cargarCitas() {
-
         val uid = auth.currentUser?.uid ?: return
         val db = FirebaseFirestore.getInstance()
 
         listaCitas.clear()
+        listaCitasCompleta.clear() // Limpiamos el respaldo también
 
-        db.collection("usuarios")
-            .document(uid)
-            .collection("mascotas")
-            .get()
+        db.collection("usuarios").document(uid).collection("mascotas").get()
             .addOnSuccessListener { mascotas ->
-
                 if (mascotas.isEmpty) {
-                    // recyclerCitas.adapter = CitasAdapter(listaCitas)
                     adapter.notifyDataSetChanged()
+                    evaluarVisibilidadFiltro() // <-- CORRECCIÓN: Oculta el filtro si no hay mascotas
                     return@addOnSuccessListener
                 }
 
                 var consultasPendientes = mascotas.size()
 
                 for (mascota in mascotas) {
-
                     val ruac = mascota.id
                     val nombreMascota = EncryptionUtils.decrypt(mascota.getString("nombre") ?: "")
 
-                    db.collection("usuarios")
-                        .document(uid)
-                        .collection("mascotas")
-                        .document(ruac)
-                        .collection("citas")
-                        .get()
+                    db.collection("usuarios").document(uid).collection("mascotas")
+                        .document(ruac).collection("citas").get()
                         .addOnSuccessListener { citas ->
-
                             for (doc in citas) {
-
                                 val servicio = EncryptionUtils.decrypt(doc.getString("servicio") ?: "")
                                 val fecha = EncryptionUtils.decrypt(doc.getString("horario") ?: "")
 
-                                listaCitas.add(
-                                    Citas(
-                                        idC = doc.id,
-                                        servicio = servicio,
-                                        horario = fecha,
-                                        notas = "",
-                                        ruacMascota = ruac,
-                                        nombreMascota = nombreMascota
-                                    )
+                                val nuevaCita = Citas(
+                                    idC = doc.id,
+                                    servicio = servicio,
+                                    horario = fecha,
+                                    notas = "",
+                                    ruacMascota = ruac,
+                                    nombreMascota = nombreMascota
                                 )
+                                listaCitasCompleta.add(nuevaCita)
                             }
 
                             consultasPendientes--
 
-                            // SOLO AQUÍ actualizamos
                             if (consultasPendientes == 0) {
-                                //Toast.makeText(this, "Citas cargadas: ${listaCitas.size}", Toast.LENGTH_SHORT).show()
-                                recyclerCitas.adapter = CitasAdapter(listaCitas, this)
+                                evaluarVisibilidadFiltro() // <-- CORRECCIÓN: Evalúa cada vez que termina
+                                actualizarSpinnerMascotas()
+                                aplicarFiltrosYOrden()
                             }
                         }
                         .addOnFailureListener {
                             consultasPendientes--
+                            // Por seguridad, si falla una consulta pero terminan las demás
+                            if (consultasPendientes == 0) {
+                                evaluarVisibilidadFiltro()
+                                actualizarSpinnerMascotas()
+                                aplicarFiltrosYOrden()
+                            }
                         }
                 }
             }
     }
 
+    private fun actualizarSpinnerMascotas() {
+        val nombres = listaCitasCompleta.map { it.nombreMascota }.distinct().toMutableList()
+        nombres.add(0, "Todas")
+
+        // Usamos un layout base de Android para que el texto tenga más espacio al desplegarse
+        val adapterFiltro = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nombres)
+        binding.spinnerFiltroMascota.setAdapter(adapterFiltro)
+    }
+
     private fun ocultarMenus() {
         binding.cardMenuOpciones.visibility = View.GONE
         binding.cardMenuPrincipal.visibility = View.GONE
+    }
+
+    private fun setupEasterEgg() {
+        binding.cardHeader.setOnClickListener {
+            val currentTime = System.currentTimeMillis()
+
+            // Si pasan más de 2 segundos entre clics, reiniciamos el contador
+            if (currentTime - lastClickTime > 2000) {
+                countEasterEgg = 0
+            }
+
+            lastClickTime = currentTime
+            countEasterEgg++
+
+            // Log opcional para que veas en consola cuántos llevas
+            // Log.d("EasterEgg", "Clic número: $countEasterEgg")
+
+            if (countEasterEgg == 5) {
+                mostrarDedicatoria()
+                countEasterEgg = 0 // Reiniciar tras el éxito
+            }
+        }
+    }
+
+    private fun mostrarDedicatoria() {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_agradecimientos)
+
+        // Animación suave de entrada/salida
+        dialog.window?.attributes?.windowAnimations = android.R.style.Animation_Dialog
+
+        // Fondo transparente para respetar los bordes redondeados del XML
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        // CAMBIO CLAVE: Usamos View en lugar de Button para evitar el ClassCastException
+        val btnCerrar = dialog.findViewById<View>(R.id.btnCerrarEasterEggContainer)
+
+        btnCerrar?.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun aplicarFiltrosYOrden() {
+        val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+
+        // 1. Filtrar por Mascota
+        val listaFiltrada = if (mascotaSeleccionadaFiltro == "Todas" || mascotaSeleccionadaFiltro == "Mascota" || mascotaSeleccionadaFiltro.isEmpty()) {
+            listaCitasCompleta.toMutableList()
+        } else {
+            listaCitasCompleta.filter { it.nombreMascota == mascotaSeleccionadaFiltro }.toMutableList()
+        }
+
+        // 2. Ordenar por Fecha (Recuperamos ambas funciones)
+        if (binding.chipProximas.isChecked) {
+            // Ascendente: las fechas más cercanas
+            listaFiltrada.sortBy {
+                try { sdf.parse(it.horario)?.time } catch (e: Exception) { Long.MAX_VALUE }
+            }
+        } else if (binding.chipLejanas.isChecked) {
+            // Descendente: las fechas más lejanas
+            listaFiltrada.sortByDescending {
+                try { sdf.parse(it.horario)?.time } catch (e: Exception) { 0L }
+            }
+        }
+
+        // 3. Actualizar la lista que ve el RecyclerView
+        listaCitas.clear()
+        listaCitas.addAll(listaFiltrada)
+        adapter.notifyDataSetChanged()
+    }
+
+    private fun configurarFiltrosUI() {
+        binding.spinnerFiltroMascota.setOnItemClickListener { parent, _, position, _ ->
+            mascotaSeleccionadaFiltro = parent.getItemAtPosition(position).toString()
+            aplicarFiltrosYOrden()
+        }
+
+        binding.chipGroupOrden.setOnCheckedChangeListener { _, _ ->
+            aplicarFiltrosYOrden()
+        }
+    }
+
+    private fun evaluarVisibilidadFiltro() {
+        if (listaCitasCompleta.size > 4) {
+            binding.cardFiltros.visibility = View.VISIBLE
+        } else {
+            binding.cardFiltros.visibility = View.GONE
+
+            // Si el filtro se oculta, nos aseguramos de resetearlo internamente
+            // para que no se quede "atrapado" mostrando solo una mascota
+            mascotaSeleccionadaFiltro = "Todas"
+            binding.spinnerFiltroMascota.setText("Todas", false)
+        }
+    }
+
+    fun recargarCitasDesdeAdapter() {
+        // Al llamar a cargarCitas de nuevo, se vuelve a descargar la lista actualizada
+        // y se ejecuta evaluarVisibilidadFiltro() automáticamente.
+        cargarCitas()
     }
 }
