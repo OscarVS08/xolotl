@@ -86,6 +86,9 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.5.2")
     // Mockito para Android (necesario si quieres mocks dentro del emulador)
     androidTestImplementation("org.mockito:mockito-android:5.5.0")
+
+    // Librería para el tour visual (Onboarding)
+    implementation("com.getkeepsafe.taptargetview:taptargetview:1.13.3")
 }
 
 

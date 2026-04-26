@@ -27,6 +27,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.example.xolotl.utils.EncryptionUtils
 import android.app.Dialog
 import android.widget.ArrayAdapter
+import com.getkeepsafe.taptargetview.TapTarget
+import com.getkeepsafe.taptargetview.TapTargetSequence
 
 class MainActivity : AppCompatActivity() {
 
@@ -66,6 +68,20 @@ class MainActivity : AppCompatActivity() {
         recyclerCitas.layoutManager = GridLayoutManager(this, 2)
         adapter = CitasAdapter(listaCitas, this)
         recyclerCitas.adapter = adapter
+
+        // ==========================================
+        // VALIDAR SI ES LA PRIMERA VEZ EN LA APP
+        // ==========================================
+        val preferencias = getSharedPreferences("XolotlPrefs", MODE_PRIVATE)
+        val esPrimeraVez = preferencias.getBoolean("tourCompletado", true)
+
+        if (esPrimeraVez) {
+            // Mostramos el recorrido visual
+            mostrarTourVisual()
+
+            // Guardamos que ya lo vio para que no vuelva a salir
+            preferencias.edit().putBoolean("tourCompletado", false).apply()
+        }
 
         //cargarCitas()
         // Al tocar el fondo (el ConstraintLayout principal), cerramos menús
@@ -442,5 +458,64 @@ class MainActivity : AppCompatActivity() {
         // Al llamar a cargarCitas de nuevo, se vuelve a descargar la lista actualizada
         // y se ejecuta evaluarVisibilidadFiltro() automáticamente.
         cargarCitas()
+    }
+
+    // ==========================================
+    // TOUR VISUAL (ONBOARDING)
+    // ==========================================
+    private fun mostrarTourVisual() {
+        TapTargetSequence(this)
+            .targets(
+                // 1. Botón Central (Acciones Rápidas)
+                TapTarget.forView(binding.btnPrincipal, "Acciones Rápidas", "Toca aquí para agendar citas, agregar mascotas, vacunas y desparasitaciones.")
+                    .outerCircleColor(R.color.rectanguloLogo) // Usa el color amarillo/naranja de tu logo
+                    .outerCircleAlpha(0.96f)
+                    .targetCircleColor(android.R.color.white)
+                    .titleTextSize(20)
+                    .titleTextColor(android.R.color.black)
+                    .descriptionTextSize(14)
+                    .descriptionTextColor(android.R.color.black)
+                    .cancelable(false) // Falso para obligar al usuario a interactuar
+                    .tintTarget(false),
+
+                // 2. Botón de Emergencias
+                TapTarget.forView(binding.btnEmergencia, "Urgencias 24/7", "Encuentra clínicas veterinarias de emergencia abiertas cerca de ti.")
+                    .outerCircleColor(R.color.botonEmergencia) // Usa el rojo de tu botón de emergencia
+                    .outerCircleAlpha(0.96f)
+                    .targetCircleColor(android.R.color.white)
+                    .titleTextSize(20)
+                    .titleTextColor(android.R.color.white)
+                    .descriptionTextSize(14)
+                    .descriptionTextColor(android.R.color.white)
+                    .cancelable(false)
+                    .tintTarget(false),
+
+                // 3. Botón de Menú/Perfil
+                TapTarget.forView(binding.btnMenu, "Tu Perfil y Ajustes", "Accede a tus notificaciones, edita tu perfil y administra tu cuenta desde aquí.")
+                    .outerCircleColor(R.color.moradoSubtitulo) // Usa el morado de tu app
+                    .outerCircleAlpha(0.96f)
+                    .targetCircleColor(android.R.color.white)
+                    .titleTextSize(20)
+                    .titleTextColor(android.R.color.white)
+                    .descriptionTextSize(14)
+                    .descriptionTextColor(android.R.color.white)
+                    .cancelable(false)
+                    .tintTarget(false)
+            )
+            .listener(object : TapTargetSequence.Listener {
+                override fun onSequenceFinish() {
+                    // Qué hacer cuando termine el tour
+                    Toast.makeText(this@MainActivity, "¡Estás listo para usar Xólotl!", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onSequenceStep(lastTarget: TapTarget?, targetClicked: Boolean) {
+                    // Acciones entre pasos (opcional, lo dejamos vacío)
+                }
+
+                override fun onSequenceCanceled(lastTarget: TapTarget?) {
+                    // Acciones si se cancela el tour
+                }
+            })
+            .start()
     }
 }
