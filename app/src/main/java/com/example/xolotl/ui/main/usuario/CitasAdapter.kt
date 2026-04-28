@@ -11,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import com.example.xolotl.MainActivity
 import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -104,6 +105,11 @@ class CitasAdapter(
                 // eliminar del listado local
                 (lista as MutableList).remove(cita)
                 notifyDataSetChanged()
+
+                // Agregamos para que funcione la muestra del filtro
+                if (context is MainActivity) {
+                    context.recargarCitasDesdeAdapter()
+                }
             }
             .addOnFailureListener {
 
