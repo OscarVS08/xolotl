@@ -4,10 +4,10 @@ import com.example.xolotl.data.models.Mascotas
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 
-class MascotaRepository {
-
-    private val db = FirebaseFirestore.getInstance()
-    private val storage = FirebaseStorage.getInstance()
+class MascotaRepository(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+) {
 
     fun registrarMascota(
         mascota: Mascotas,

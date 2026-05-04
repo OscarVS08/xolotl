@@ -4,10 +4,11 @@ import com.example.xolotl.data.models.Citas
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class CitasRepository {
-
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+// INYECCIÓN: Agregamos Firebase al constructor con sus valores por defecto
+class CitasRepository(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) {
 
     fun registrarCita(
         ruacMascota: String,
@@ -15,9 +16,7 @@ class CitasRepository {
         onSuccess: () -> Unit,
         onError: (Exception) -> Unit
     ) {
-
         val uid = auth.currentUser?.uid
-
         if (uid == null) {
             onError(Exception("Usuario no autenticado"))
             return
@@ -40,8 +39,12 @@ class CitasRepository {
         onSuccess: (List<Citas>) -> Unit,
         onError: (Exception) -> Unit
     ) {
-
-        val uid = auth.currentUser?.uid ?: return
+        val uid = auth.currentUser?.uid
+        // CORRECCIÓN: Ahora notificamos el error en lugar de un return silencioso
+        if (uid == null) {
+            onError(Exception("Usuario no autenticado"))
+            return
+        }
 
         db.collection("usuarios")
             .document(uid)
@@ -49,8 +52,9 @@ class CitasRepository {
             .document(ruacMascota)
             .collection("citas")
             .get()
-            .addOnSuccessListener {
-                val lista = it.map { doc -> doc.toObject(Citas::class.java) }
+            .addOnSuccessListener { querySnapshot ->
+                // Mapeamos los documentos a la lista
+                val lista = querySnapshot.map { doc -> doc.toObject(Citas::class.java) }
                 onSuccess(lista)
             }
             .addOnFailureListener { onError(it) }

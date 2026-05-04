@@ -38,6 +38,13 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    testOptions {
+        unitTests {
+            // Para encuentrar los IDs de los botones
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -75,6 +82,8 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
     // Para probar lógica que use hilos o corrutinas
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+    // Roboelectric para pruebas unnitarias sin emulador Android
+    testImplementation("org.robolectric:robolectric:4.11.1")
 
     // --- INFRAESTRUCTURA DE PRUEBAS DE INTEGRACIÓN/UI (Carpeta 'androidTest') ---
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

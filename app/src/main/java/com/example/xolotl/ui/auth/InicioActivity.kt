@@ -24,7 +24,10 @@ class InicioActivity : AppCompatActivity() {
 
         // Botón: Registrarse
         binding.btnRegistrarse.setOnClickListener {
-            val dialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            //val dialog = SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
+            // USAMOS LA FACTORY EN LUGAR DEL CONSTRUCTOR DIRECTO
+            val dialog = UiUtils.dialogFactory?.invoke(this, SweetAlertDialog.WARNING_TYPE)
+                ?: SweetAlertDialog(this, SweetAlertDialog.WARNING_TYPE)
 
             dialog.setTitleText("Requisito Importante")
                 .setContentText("Para usar Xólotl, es obligatorio contar con el RUAC de tu mascota. ¿Deseas continuar?")

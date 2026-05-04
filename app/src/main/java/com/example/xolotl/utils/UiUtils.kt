@@ -7,18 +7,18 @@ import cn.pedant.SweetAlert.SweetAlertDialog
 
 object UiUtils {
 
+    // Cambiamos a un tipo que pueda ser nulo para forzar el control en tests
+    var dialogFactory: ((Context, Int) -> SweetAlertDialog)? = null
+
+    // Función interna para obtener el diálogo (real o mock)
+    private fun getDialog(context: Context, type: Int): SweetAlertDialog {
+        return dialogFactory?.invoke(context, type) ?: SweetAlertDialog(context, type)
+    }
+
     fun showToast(context: Context, message: String) {
         Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
     }
 
-    /**
-     * Muestra un SweetAlertDialog con solo botón de confirmación
-     * @param activity: Activity donde se mostrará el alert
-     * @param titulo: Título del alert
-     * @param mensaje: Contenido del alert
-     * @param tipo: Tipo de SweetAlertDialog (SUCCESS_TYPE, ERROR_TYPE, WARNING_TYPE...)
-     * @param onConfirm: Acción a ejecutar al presionar OK
-     */
     fun mostrarAlerta(
         activity: Activity,
         titulo: String,
@@ -26,7 +26,7 @@ object UiUtils {
         tipo: Int = SweetAlertDialog.SUCCESS_TYPE,
         onConfirm: (() -> Unit)? = null
     ) {
-        SweetAlertDialog(activity, tipo)
+        getDialog(activity, tipo) // <--- Usamos el helper
             .setTitleText(titulo)
             .setContentText(mensaje)
             .setConfirmText("OK")
@@ -37,17 +37,6 @@ object UiUtils {
             .show()
     }
 
-    /**
-     * Muestra un SweetAlertDialog con confirmación y cancelación
-     * @param activity: Activity donde se mostrará el alert
-     * @param titulo: Título del alert
-     * @param mensaje: Contenido del alert
-     * @param tipo: Tipo de SweetAlertDialog
-     * @param confirmText: Texto del botón de confirmación
-     * @param cancelText: Texto del botón de cancelación
-     * @param onConfirm: Acción al presionar confirm
-     * @param onCancel: Acción al presionar cancelar
-     */
     fun mostrarAlertaCerrarSesion(
         activity: Activity,
         titulo: String,
@@ -58,7 +47,7 @@ object UiUtils {
         onConfirm: (() -> Unit)? = null,
         onCancel: (() -> Unit)? = null
     ) {
-        SweetAlertDialog(activity, tipo)
+        getDialog(activity, tipo)
             .setTitleText(titulo)
             .setContentText(mensaje)
             .setConfirmText(confirmText)
@@ -74,16 +63,8 @@ object UiUtils {
             .show()
     }
 
-    /**
-     * Muestra una alerta específica cuando el PDF de la mascota ha sido generado
-     * @param activity: Activity donde se mostrará el alert
-     * @param onConfirm: Acción al presionar "Aceptar"
-     */
-    fun mostrarAlertaPdfGenerado(
-        activity: Activity,
-        onConfirm: (() -> Unit)? = null
-    ) {
-        SweetAlertDialog(activity, SweetAlertDialog.SUCCESS_TYPE)
+    fun mostrarAlertaPdfGenerado(activity: Activity, onConfirm: (() -> Unit)? = null) {
+        getDialog(activity, SweetAlertDialog.SUCCESS_TYPE)
             .setTitleText("PDF generado")
             .setContentText("Carnet de la mascota generado exitosamente")
             .setConfirmText("Aceptar")
@@ -94,16 +75,8 @@ object UiUtils {
             .show()
     }
 
-    /**
-     * Muestra una alerta cuando ocurre un error al generar el PDF
-     * @param activity: Activity donde se mostrará el alert
-     * @param onConfirm: Acción al presionar "Aceptar"
-     */
-    fun mostrarAlertaPdfError(
-        activity: Activity,
-        onConfirm: (() -> Unit)? = null
-    ) {
-        SweetAlertDialog(activity, SweetAlertDialog.ERROR_TYPE)
+    fun mostrarAlertaPdfError(activity: Activity, onConfirm: (() -> Unit)? = null) {
+        getDialog(activity, SweetAlertDialog.ERROR_TYPE)
             .setTitleText("Error")
             .setContentText("No se pudo generar el PDF de la mascota")
             .setConfirmText("Aceptar")
@@ -124,16 +97,11 @@ object UiUtils {
         onConfirm: (() -> Unit)? = null,
         onCancel: (() -> Unit)? = null
     ) {
+        val mensaje = "Por favor corrobora los siguientes datos:\n\n" +
+                "• Nombre: $nombre\n• Marca: $marca\n• Fecha: $fecha\n" +
+                "• Próxima cita: $proximaFecha\n• Método: $metodo"
 
-        val mensaje =
-            "Por favor corrobora los siguientes datos:\n\n" +
-                    "• Nombre: $nombre\n" +
-                    "• Marca: $marca\n" +
-                    "• Fecha: $fecha\n" +
-                    "• Próxima cita: $proximaFecha\n" +
-                    "• Método: $metodo"
-
-        SweetAlertDialog(activity, SweetAlertDialog.WARNING_TYPE)
+        getDialog(activity, SweetAlertDialog.WARNING_TYPE)
             .setTitleText("Confirmar registro")
             .setContentText(mensaje)
             .setConfirmText("Registrar")
@@ -149,9 +117,6 @@ object UiUtils {
             .show()
     }
 
-    /**
-     * Muestra una alerta de confirmación con los detalles de la vacuna antes de guardar en Firebase
-     */
     fun mostrarConfirmacionVacuna(
         activity: Activity,
         nombre: String,
@@ -163,13 +128,10 @@ object UiUtils {
         onCancel: (() -> Unit)? = null
     ) {
         val mensaje = "Por favor corrobora los siguientes datos:\n\n" +
-                "• Vacuna: $nombre\n" +
-                "• Marca: $marca\n" +
-                "• Dosis: $dosis\n" +
-                "• Fecha: $fecha\n" +
-                "• Próxima cita: $proximaFecha"
+                "• Vacuna: $nombre\n• Marca: $marca\n• Dosis: $dosis\n" +
+                "• Fecha: $fecha\n• Próxima cita: $proximaFecha"
 
-        SweetAlertDialog(activity, SweetAlertDialog.WARNING_TYPE)
+        getDialog(activity, SweetAlertDialog.WARNING_TYPE)
             .setTitleText("Confirmar vacuna")
             .setContentText(mensaje)
             .setConfirmText("Registrar")
@@ -185,9 +147,6 @@ object UiUtils {
             .show()
     }
 
-    /**
-     * Muestra una alerta de confirmación con los detalles de la cita antes de agendar
-     */
     fun mostrarConfirmacionCita(
         activity: Activity,
         servicio: String,
@@ -196,11 +155,9 @@ object UiUtils {
         onCancel: (() -> Unit)? = null
     ) {
         val mensaje = "Por favor corrobora los datos de la cita:\n\n" +
-                "• Servicio: $servicio\n" +
-                "• Fecha y hora: $fecha\n\n" +
-                "¿Deseas agendar esta cita?"
+                "• Servicio: $servicio\n• Fecha y hora: $fecha\n\n¿Deseas agendar esta cita?"
 
-        SweetAlertDialog(activity, SweetAlertDialog.WARNING_TYPE)
+        getDialog(activity, SweetAlertDialog.WARNING_TYPE)
             .setTitleText("Confirmar Cita")
             .setContentText(mensaje)
             .setConfirmText("Agendar")

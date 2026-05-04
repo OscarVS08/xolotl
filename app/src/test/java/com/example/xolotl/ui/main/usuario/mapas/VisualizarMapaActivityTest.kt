@@ -1,4 +1,4 @@
-package com.example.xolotl.ui.auth.main.usuario.mapas
+package com.example.xolotl.ui.main.usuario.mapas
 
 import android.os.Bundle
 import android.view.View
