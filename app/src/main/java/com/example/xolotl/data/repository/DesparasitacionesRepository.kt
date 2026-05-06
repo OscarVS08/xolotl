@@ -4,10 +4,10 @@ import com.example.xolotl.data.models.Desparasitaciones
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 
-class DesparasitacionRepository {
-
-    private val db = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
+class DesparasitacionRepository(
+    private val db: FirebaseFirestore = FirebaseFirestore.getInstance(),
+    private val auth: FirebaseAuth = FirebaseAuth.getInstance()
+) {
 
     fun registrarDesparasitacion(
         ruacMascota: String,

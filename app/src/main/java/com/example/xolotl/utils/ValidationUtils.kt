@@ -1,12 +1,18 @@
 package com.example.xolotl.utils
 
-import android.util.Patterns
+import java.util.regex.Pattern
 
 object ValidationUtils {
 
+    // Regex estándar de la industria para correos electrónicos (compatible con pruebas locales)
+    private val EMAIL_PATTERN = Pattern.compile(
+        "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}\$"
+    )
+
     // --- EMAIL ---
     fun isValidEmail(email: String): Boolean {
-        return Patterns.EMAIL_ADDRESS.matcher(email).matches()
+        if (email.isBlank()) return false
+        return EMAIL_PATTERN.matcher(email).matches()
     }
 
     // --- CURP ---

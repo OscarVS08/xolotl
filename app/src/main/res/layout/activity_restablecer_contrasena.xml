@@ -90,6 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="55dp"
                     android:hint="Correo electrónico"
+                    android:textColorHint="@color/hintText"
                     android:inputType="textEmailAddress"
                     android:background="@drawable/campos_circulares"
                     android:paddingHorizontal="20dp"

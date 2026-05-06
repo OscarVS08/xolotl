@@ -162,31 +162,55 @@ class AgregarCitasActivity : AppCompatActivity() {
     }
 
     private fun validarFormularioCompleto() {
-        val servicio = binding.txtServicio.text.toString().trim()
+        val servicioSeleccionado = binding.txtServicio.text.toString().trim()
         val otroServicio = binding.txtOtroServicio.text.toString().trim()
         val fechaHora = binding.txtFechaHora.text.toString().trim()
         val notas = binding.txtNotas.text.toString().trim()
         val nombreMascota = binding.spinnerMascota.text.toString()
 
-        binding.layoutMascota.error = if (idMascotaSeleccionada.isEmpty()) "Selecciona una mascota" else null
-        binding.layoutServicio.error = if (servicio.isEmpty()) "Obligatorio" else null
-        if (servicio.isEmpty()) {
-            binding.layoutServicio.error = "Campo obligatorio"
-        } else if (servicio == "Otro") {
-            // Validamos el campo extra: obligatorio y mínimo 3 caracteres
-            if (otroServicio.isEmpty()) {
-                binding.layoutOtroServicio.error = "Especifique el servicio"
-            } else if (otroServicio.length < 3) {
-                binding.layoutOtroServicio.error = "Mínimo 3 caracteres"
-            } else if (!ValidationUtils.isValidServicio(otroServicio)) {
-                binding.layoutOtroServicio.error = "Formato inválido"
-            }
-        }
-        binding.layoutFechaHora.error = if (fechaHora.isEmpty()) "Obligatorio" else null
+        // 1. Extraemos el servicio final a guardar
+        val servicioFinal = if (servicioSeleccionado == "Otro") otroServicio else servicioSeleccionado
 
+        // 2. Validar Mascota
+        binding.layoutMascota.error = if (idMascotaSeleccionada.isEmpty()) "Selecciona una mascota" else null
+
+        // 3. Validar Servicio Base
+        if (servicioSeleccionado.isEmpty()) {
+            binding.layoutServicio.error = "Campo obligatorio"
+        } else {
+            binding.layoutServicio.error = null
+        }
+
+        // 4. Validar Servicio "Otro" (Si aplica)
+        if (servicioSeleccionado == "Otro") {
+            binding.layoutOtroServicio.error = when {
+                otroServicio.isEmpty() -> "Especifique el servicio"
+                otroServicio.length < 3 -> "Mínimo 3 caracteres"
+                !ValidationUtils.isValidServicio(otroServicio) -> "Formato inválido"
+                else -> null
+            }
+        } else {
+            binding.layoutOtroServicio.error = null
+        }
+
+        // 5. Validar Fecha y Hora (CORRECCIÓN AQUÍ)
+        binding.layoutFechaHora.error = when {
+            fechaHora.isEmpty() -> "Obligatorio"
+            !ValidationUtils.isValidHorario(fechaHora) -> "Formato DD/MM/YYYY HH:mm"
+            !ValidationUtils.isFechaFutura(fechaHora) -> "La cita no puede ser en el pasado"
+            else -> null
+        }
+
+        // 6. Validar Notas
+        binding.layoutNotas.error = if (!ValidationUtils.isValidNotasCita(notas)) "Máximo 200 caracteres" else null
+
+        // 7. Evaluar todos los layouts (INCLUYENDO el de 'Otro')
         val tieneErrores = listOf(
-            binding.layoutMascota, binding.layoutServicio,
-            binding.layoutFechaHora, binding.layoutNotas
+            binding.layoutMascota,
+            binding.layoutServicio,
+            binding.layoutOtroServicio,
+            binding.layoutFechaHora,
+            binding.layoutNotas
         ).any { it.error != null }
 
         if (tieneErrores) {
@@ -194,11 +218,12 @@ class AgregarCitasActivity : AppCompatActivity() {
             return
         }
 
+        // Guardar con el servicioFinal (para no guardar la palabra "Otro" si tipeó un servicio)
         UiUtils.mostrarConfirmacionCita(
             activity = this,
-            servicio = servicio,
+            servicio = servicioFinal,
             fecha = fechaHora,
-            onConfirm = { guardarCita(servicio, fechaHora, notas, nombreMascota) }
+            onConfirm = { guardarCita(servicioFinal, fechaHora, notas, nombreMascota) }
         )
     }
 

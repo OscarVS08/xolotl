@@ -10,49 +10,128 @@ import org.mockito.Mockito.*
 class RestablecerContrasenaActivityTest {
 
     private lateinit var mockAuthRepo: AuthRepository
-    private lateinit var activity: RestablecerContrasenaActivity
 
     @Before
     fun setup() {
+        // Inicializamos nuestro Repositorio falso (Mock) sin instanciar la Actividad
         mockAuthRepo = mock(AuthRepository::class.java)
-        activity = RestablecerContrasenaActivity()
+    }
+
+    // ==========================================
+    // VALIDACIONES DE FORMULARIO (Lógica pura)
+    // ==========================================
+
+    @Test
+    fun `validacion falla con correo vacio o en blanco`() {
+        // Simulamos cuando el usuario le da click al botón sin escribir nada
+        assert(!ValidationUtils.isValidEmail(""))
+        assert(!ValidationUtils.isValidEmail("   "))
     }
 
     @Test
-    fun `falla al enviar correo invalido`() {
-        val correo = "correo_invalido"
-
-        val esValido = ValidationUtils.isValidEmail(correo)
-        assert(!esValido)
+    fun `validacion falla con correo sin formato correcto`() {
+        // Casos que deben activar la alerta de "Formato inválido"
+        assert(!ValidationUtils.isValidEmail("correo_invalido"))
+        assert(!ValidationUtils.isValidEmail("usuario@.com"))
+        assert(!ValidationUtils.isValidEmail("@dominio.com"))
     }
 
     @Test
-    fun `éxito al enviar correo valido`() {
+    fun `validacion exitosa con correo valido`() {
+        // Casos que deben pasar la validación
+        assert(ValidationUtils.isValidEmail("usuario@valido.com"))
+        assert(ValidationUtils.isValidEmail("nombre.apellido@empresa.com.mx"))
+    }
+
+    // ==========================================
+    // PRUEBAS DE REPOSITORIO (Manejo de Firebase)
+    // ==========================================
+
+    @Test
+    fun `enviar correo exitoso llama al callback onSuccess`() {
         val correo = "usuario@valido.com"
+        var exito = false
 
-        val esValido = ValidationUtils.isValidEmail(correo)
-        assert(esValido)
+        val testCallback = object : AuthCallback {
+            override fun onSuccess() { exito = true }
+            override fun onError(error: String) { exito = false }
+        }
 
-        // Simulamos que el repositorio responde con éxito
+        // Pasamos variables exactas, sin eq() ni any()
         doAnswer { invocation ->
-            val callback = invocation.getArgument<AuthCallback>(1)
+            val callback = invocation.arguments[1] as AuthCallback
             callback.onSuccess()
             null
-        }.`when`(mockAuthRepo).enviarCorreoRecuperacion(anyString(), any(AuthCallback::class.java))
+        }.`when`(mockAuthRepo).enviarCorreoRecuperacion(correo, testCallback)
+
+        mockAuthRepo.enviarCorreoRecuperacion(correo, testCallback)
+
+        assert(exito)
     }
 
     @Test
-    fun `error al enviar correo cuando el repositorio falla`() {
-        val correo = "usuario@valido.com"
+    fun `falla por usuario no encontrado en Firebase y notifica al callback`() {
+        val correo = "fantasma@valido.com"
+        var mensajeCapturado = ""
 
-        val esValido = ValidationUtils.isValidEmail(correo)
-        assert(esValido)
+        val testCallback = object : AuthCallback {
+            override fun onSuccess() {}
+            override fun onError(error: String) { mensajeCapturado = error }
+        }
 
-        // Simulamos error en el repositorio
+        // Simulamos el "user-not-found" que espera tu Activity
         doAnswer { invocation ->
-            val callback = invocation.getArgument<AuthCallback>(1)
-            callback.onError("Error de conexión")
+            val callback = invocation.arguments[1] as AuthCallback
+            callback.onError("user-not-found")
             null
-        }.`when`(mockAuthRepo).enviarCorreoRecuperacion(anyString(), any(AuthCallback::class.java))
+        }.`when`(mockAuthRepo).enviarCorreoRecuperacion(correo, testCallback)
+
+        mockAuthRepo.enviarCorreoRecuperacion(correo, testCallback)
+
+        assert(mensajeCapturado == "user-not-found")
+    }
+
+    @Test
+    fun `falla por error de conexion a internet y notifica al callback`() {
+        val correo = "usuario@valido.com"
+        var mensajeCapturado = ""
+
+        val testCallback = object : AuthCallback {
+            override fun onSuccess() {}
+            override fun onError(error: String) { mensajeCapturado = error }
+        }
+
+        // Simulamos el error de red
+        doAnswer { invocation ->
+            val callback = invocation.arguments[1] as AuthCallback
+            callback.onError("network-request-failed")
+            null
+        }.`when`(mockAuthRepo).enviarCorreoRecuperacion(correo, testCallback)
+
+        mockAuthRepo.enviarCorreoRecuperacion(correo, testCallback)
+
+        assert(mensajeCapturado == "network-request-failed")
+    }
+
+    @Test
+    fun `falla por error desconocido y notifica al callback`() {
+        val correo = "usuario@valido.com"
+        var mensajeCapturado = ""
+
+        val testCallback = object : AuthCallback {
+            override fun onSuccess() {}
+            override fun onError(error: String) { mensajeCapturado = error }
+        }
+
+        // Simulamos un error raro que activará el "else" en tu Activity
+        doAnswer { invocation ->
+            val callback = invocation.arguments[1] as AuthCallback
+            callback.onError("internal-server-error-500")
+            null
+        }.`when`(mockAuthRepo).enviarCorreoRecuperacion(correo, testCallback)
+
+        mockAuthRepo.enviarCorreoRecuperacion(correo, testCallback)
+
+        assert(mensajeCapturado == "internal-server-error-500")
     }
 }
