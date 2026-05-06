@@ -44,6 +44,19 @@ android {
             // Para encuentrar los IDs de los botones
             isIncludeAndroidResources = true
         }
+
+        unitTests.all {
+            val testTask = this as? org.gradle.api.tasks.testing.Test
+            testTask?.apply {
+                maxHeapSize = "3072m"
+                setForkEvery(1L)
+
+                // --- PROPIEDADES DE RENDIMIENTO ---
+                systemProperty("robolectric.graphicsMode", "LEGACY")
+                systemProperty("robolectric.pixelCopyRenderMode", "off")
+                jvmArgs("-XX:+UseG1GC", "-XX:TieredStopAtLevel=1", "-Xss2m")
+            }
+        }
     }
 }
 
