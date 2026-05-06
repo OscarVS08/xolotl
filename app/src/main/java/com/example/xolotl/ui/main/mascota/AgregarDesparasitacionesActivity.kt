@@ -141,15 +141,46 @@ class AgregarDesparasitacionesActivity : AppCompatActivity() {
         val fecha = binding.txtFecha.text.toString().trim()
         val proxFecha = binding.txtProxFecha.text.toString().trim()
 
-        // Activar visualización de errores modernos (TextInputLayout)
+        // 1. Validar Mascota
         binding.layoutMascota.error = if (ruacSeleccionado.isEmpty()) "Selecciona una mascota" else null
-        binding.layoutMetodo.error = if (metodo.isEmpty()) "Obligatorio" else null
-        binding.layoutNombre.error = if (nombre.isEmpty()) "Obligatorio" else null
-        binding.layoutMarca.error = if (marca.isEmpty()) "Obligatorio" else null
-        binding.layoutFecha.error = if (fecha.isEmpty()) "Obligatorio" else null
-        binding.layoutProxFecha.error = if (proxFecha.isEmpty()) "Obligatorio" else null
 
-        // Verificación de errores
+        // 2. Validar Método (Aplica la misma regla del TextWatcher)
+        binding.layoutMetodo.error = when {
+            metodo.isEmpty() -> "Obligatorio"
+            !ValidationUtils.isValidMetodo(metodo) -> "Mínimo 3 letras (máx 30)"
+            else -> null
+        }
+
+        // 3. Validar Fármaco
+        binding.layoutNombre.error = when {
+            nombre.isEmpty() -> "Obligatorio"
+            !ValidationUtils.isValidMedicamento(nombre) -> "Nombre de fármaco inválido"
+            else -> null
+        }
+
+        // 4. Validar Marca
+        binding.layoutMarca.error = when {
+            marca.isEmpty() -> "Obligatorio"
+            !ValidationUtils.isValidMarca(marca) -> "Marca inválida"
+            else -> null
+        }
+
+        // 5. Validar Fecha de Aplicación
+        binding.layoutFecha.error = when {
+            fecha.isEmpty() -> "Obligatorio"
+            !ValidationUtils.isValidFechaDesparasitacion(fecha) -> "Formato inválido"
+            else -> null
+        }
+
+        // 6. Validar Próxima Fecha (LA CORRECCIÓN ESTÁ AQUÍ)
+        binding.layoutProxFecha.error = when {
+            proxFecha.isEmpty() -> "Obligatorio"
+            !ValidationUtils.isValidProximaFecha(proxFecha) -> "Formato DD/MM/YYYY"
+            fecha.isNotEmpty() && !ValidationUtils.isFechaPosterior(fecha, proxFecha) -> "Debe ser posterior a la fecha de aplicación"
+            else -> null
+        }
+
+        // 7. Evaluar si algún layout terminó con error
         val tieneErrores = listOf(
             binding.layoutMascota, binding.layoutMetodo, binding.layoutNombre,
             binding.layoutMarca, binding.layoutFecha, binding.layoutProxFecha
@@ -160,7 +191,7 @@ class AgregarDesparasitacionesActivity : AppCompatActivity() {
             return
         }
 
-        // Confirmación personalizada
+        // Confirmación personalizada si todo está correcto
         UiUtils.mostrarConfirmacionDesparasitacion(
             activity = this,
             nombre = nombre,

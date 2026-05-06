@@ -104,6 +104,7 @@ class MainActivity : AppCompatActivity() {
         cargarNombreUsuario()
         cargarCitas()
         configurarFiltrosUI()
+        ocultarMenus() // Garantizar que se oculten correctamente
     }
 
     // ========================
@@ -212,7 +213,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun notificacionesUsuario(){
         binding.btnOpcion1.setOnClickListener {
-            binding.cardMenuPrincipal.visibility = View.GONE
+            binding.cardMenuOpciones.visibility = View.GONE
             val intent = Intent(this, NotificacionesActivity::class.java)
             startActivity(intent)
         }
@@ -223,7 +224,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun editarPerfilUsuario(){
         binding.btnOpcion2.setOnClickListener {
-            binding.cardMenuPrincipal.visibility = View.GONE
+            binding.cardMenuOpciones.visibility = View.GONE
             val intent = Intent(this, EditarPerfilActivity::class.java)
             startActivity(intent)
         }
@@ -234,7 +235,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun mostrarMapaNoUrgencias(){
         binding.btnOpcion3.setOnClickListener {
-            binding.cardMenuPrincipal.visibility = View.GONE
+            binding.cardMenuOpciones.visibility = View.GONE
             val intent = Intent(this, VisualizarMapaActivity::class.java)
             startActivity(intent)
         }
@@ -245,7 +246,7 @@ class MainActivity : AppCompatActivity() {
     // ========================
     private fun editarMascotas(){
         binding.btnOpcion4.setOnClickListener {
-            binding.cardMenuPrincipal.visibility = View.GONE
+            binding.cardMenuOpciones.visibility = View.GONE
             val intent = Intent(this, MascotasActivity::class.java)
             startActivity(intent)
         }

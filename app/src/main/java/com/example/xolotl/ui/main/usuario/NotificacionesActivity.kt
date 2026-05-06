@@ -99,20 +99,58 @@ class NotificacionesActivity : AppCompatActivity() {
 
     private fun validarYProgramar() {
         val seleccion = spinnerCitas.text.toString()
-        val fechaStr = txtFechaHoraNotificacion.text.toString()
+        val fechaNotifStr = txtFechaHoraNotificacion.text.toString()
+        val fechaCitaStr = txtFechaHoraCita.text.toString()
 
-        if (seleccion.isEmpty() || fechaStr.isEmpty()) {
+        if (seleccion.isEmpty() || fechaNotifStr.isEmpty() || fechaCitaStr == "--") {
             UiUtils.mostrarAlerta(this, "Campos incompletos", "Selecciona una cita y la hora del recordatorio.", SweetAlertDialog.WARNING_TYPE)
             return
         }
 
         val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
-        val fechaDestino = sdf.parse(fechaStr)
 
-        if (fechaDestino != null && fechaDestino.after(Date())) {
+        try {
+            val fechaDestino = sdf.parse(fechaNotifStr)
+            val fechaCita = sdf.parse(fechaCitaStr)
+            val ahora = Date()
+
+            if (fechaDestino == null || fechaCita == null) return
+
+            // BARRERA 1: ¿La cita ya pasó?
+            if (fechaCita.before(ahora)) {
+                UiUtils.mostrarAlerta(this, "Cita expirada", "Esta cita ya pasó. No es posible programar un recordatorio.", SweetAlertDialog.ERROR_TYPE)
+                return
+            }
+
+            // BARRERA 2: ¿El recordatorio está en el pasado absoluto? (Tu lógica original)
+            if (fechaDestino.before(ahora)) {
+                UiUtils.mostrarAlerta(this, "Fecha inválida", "La fecha del recordatorio debe ser posterior a la hora actual.", SweetAlertDialog.ERROR_TYPE)
+                return
+            }
+
+            // BARRERA 3: El margen de maniobra (Los famosos "30 segundos")
+            // Si superó la barrera 2, significa que es futuro, pero... ¿es un futuro MUY cercano?
+            val margenMinimo = Calendar.getInstance().apply {
+                time = ahora
+                add(Calendar.MINUTE, 2)
+            }.time
+
+            if (fechaDestino.before(margenMinimo)) {
+                UiUtils.mostrarAlerta(this, "Tiempo insuficiente", "Da un margen de al menos 2 minutos desde este instante para programar la alerta.", SweetAlertDialog.WARNING_TYPE)
+                return
+            }
+
+            // BARRERA 4: La paradoja temporal (Recordatorio después de la cita)
+            if (fechaDestino.after(fechaCita) || fechaDestino.time == fechaCita.time) {
+                UiUtils.mostrarAlerta(this, "Fecha ilógica", "El recordatorio debe ser estrictamente antes de la hora de la cita.", SweetAlertDialog.ERROR_TYPE)
+                return
+            }
+
+            // ÉXITO: Programar la alarma
             programarAlarmaExacta(fechaDestino.time, seleccion)
-        } else {
-            UiUtils.mostrarAlerta(this, "Fecha inválida", "La fecha del recordatorio debe ser posterior a la hora actual.", SweetAlertDialog.ERROR_TYPE)
+
+        } catch (e: Exception) {
+            UiUtils.mostrarAlerta(this, "Error", "Formato de fecha incorrecto.", SweetAlertDialog.ERROR_TYPE)
         }
     }
 
