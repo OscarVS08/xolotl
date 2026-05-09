@@ -1,6 +1,7 @@
 package com.example.xolotl.ui.main.usuario.mapas
 
 import android.Manifest
+import android.app.Dialog
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
@@ -27,6 +28,10 @@ class VisualizarMapaUrgenciasActivity : AppCompatActivity(), OnMapReadyCallback,
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val LOCATION_PERMISSION_REQUEST_CODE = 1
 
+    // Variables para el EasterEgg
+    private var countEasterEgg = 0
+    private var lastClickTime: Long = 0
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,9 @@ class VisualizarMapaUrgenciasActivity : AppCompatActivity(), OnMapReadyCallback,
         infoClinica = findViewById(R.id.txtInfoClinica)
 
         mapFragment.getMapAsync(this)
+
+        // Configurar EasterEgg
+        setupEasterEgg()
     }
 
 
@@ -121,5 +129,43 @@ class VisualizarMapaUrgenciasActivity : AppCompatActivity(), OnMapReadyCallback,
                 enableUserLocation()
             }
         }
+    }
+
+
+    private fun setupEasterEgg() {
+        findViewById<View>(R.id.txtInfoClinica).setOnClickListener {
+            val currentTime = System.currentTimeMillis()
+
+            // Si pasan más de 2 segundos entre clics, reiniciamos el contador
+            if (currentTime - lastClickTime > 2000) {
+                countEasterEgg = 0
+            }
+
+            lastClickTime = currentTime
+            countEasterEgg++
+
+            if (countEasterEgg == 7) {
+                mostrarDedicatoria()
+                countEasterEgg = 0 // Reiniciar tras el éxito
+            }
+        }
+    }
+
+    private fun mostrarDedicatoria() {
+        val dialog = Dialog(this)
+        dialog.setContentView(R.layout.dialog_agradecimientos_diego)
+
+        // Animación suave de entrada/salida
+        dialog.window?.attributes?.windowAnimations = android.R.style.Animation_Dialog
+
+        // Fondo transparente para respetar los bordes redondeados del XML
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        val btnCerrar = dialog.findViewById<View>(R.id.btnCerrarEasterEggContainer)
+        btnCerrar?.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 }
