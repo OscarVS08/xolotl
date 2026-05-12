@@ -1,0 +1,4 @@
+package com.example.xolotl.ui.main.mascota
+
+class EditarMascotasActivityUITest {
+}

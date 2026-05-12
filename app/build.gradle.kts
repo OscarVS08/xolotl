@@ -19,6 +19,13 @@ android {
     }
 
     buildTypes {
+        getByName("debug") {
+            // Activa la cobertura para pruebas locales (src/test)
+            enableUnitTestCoverage = true
+            // Activa la cobertura para pruebas en el emulador (src/androidTest)
+            enableAndroidTestCoverage = true
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -103,14 +110,23 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     // Soporte para probar RecyclerViews y DatePickers
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    // --- PARA LOS INTENTS ---
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
     // Reglas de JUnit para lanzar Activities automáticamente
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test:runner:1.5.2")
-    // Mockito para Android (necesario si quieres mocks dentro del emulador)
+    // Mockito para Android (necesario para mocks dentro del emulador)
     androidTestImplementation("org.mockito:mockito-android:5.5.0")
+    // Asegurar que el emulador tenga la versión correcta disponible
+    androidTestImplementation("com.google.protobuf:protobuf-javalite:3.25.1")
 
     // Librería para el tour visual (Onboarding)
     implementation("com.getkeepsafe.taptargetview:taptargetview:1.13.3")
+}
+
+// Bloqueo de versión antigua de Protobuf que interfiere con Firestore en Espresso
+configurations.all {
+    exclude(group = "com.google.protobuf", module = "protobuf-lite")
 }
 
 
