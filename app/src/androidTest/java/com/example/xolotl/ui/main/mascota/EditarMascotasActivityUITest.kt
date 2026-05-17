@@ -106,7 +106,13 @@ class EditarMascotasActivityUITest {
         onView(withId(R.id.txtnumeroTelefonoDueno)).perform(scrollTo(), replaceText("5512"), closeSoftKeyboard())
 
         // 3. Verificamos que tu TextWatcher reaccione al nuevo texto inválido
-        onView(withText("Se requieren 10 dígitos")).perform(scrollTo()).check(matches(isDisplayed()))
+        onView(
+            allOf(
+                withText("Se requieren 10 dígitos"),
+                // AQUÍ ESTÁ LA MAGIA: Usamos el ID del TextInputLayout, no del EditText
+                isDescendantOfA(withId(R.id.layoutTelefonoDueno))
+            )
+        ).perform(scrollTo()).check(matches(isDisplayed()))
     }
 
     @Test

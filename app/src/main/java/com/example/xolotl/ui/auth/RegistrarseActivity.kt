@@ -13,15 +13,18 @@ import com.example.xolotl.databinding.ActivityRegistrarseBinding
 import com.example.xolotl.utils.UiUtils
 import com.example.xolotl.utils.ValidationUtils
 import com.google.firebase.auth.FirebaseAuth
-import androidx.core.widget.addTextChangedListener
 
-class RegistrarseActivity : AppCompatActivity() {
+// 1. LA CLASE AHORA IMPLEMENTA AuthCallback
+class RegistrarseActivity : AppCompatActivity(), AuthCallback {
 
     private lateinit var binding: ActivityRegistrarseBinding
     private val authRepo = AuthRepository()
     private val firebaseAuth = FirebaseAuth.getInstance()
     private var mostrarPassword = false
     private var mostrarConfirmPassword = false
+
+    // Variable global para recordar el correo durante los Callbacks
+    private var correoActual = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -55,16 +58,12 @@ class RegistrarseActivity : AppCompatActivity() {
             mostrarPassword = !mostrarPassword
 
             if (mostrarPassword) {
-                // MOSTRAR: Texto plano
                 binding.txtContrasena.transformationMethod = android.text.method.HideReturnsTransformationMethod.getInstance()
                 binding.btnToggleContrasena.setImageResource(R.drawable.ic_eye_open)
             } else {
-                // OCULTAR: Puntos/Asteriscos
                 binding.txtContrasena.transformationMethod = android.text.method.PasswordTransformationMethod.getInstance()
                 binding.btnToggleContrasena.setImageResource(R.drawable.ic_eye_closed)
             }
-
-            // Mantener el cursor al final del texto
             binding.txtContrasena.setSelection(binding.txtContrasena.text?.length ?: 0)
         }
 
@@ -73,16 +72,12 @@ class RegistrarseActivity : AppCompatActivity() {
             mostrarConfirmPassword = !mostrarConfirmPassword
 
             if (mostrarConfirmPassword) {
-                // MOSTRAR
                 binding.txtConfirmarContrasena.transformationMethod = android.text.method.HideReturnsTransformationMethod.getInstance()
                 binding.btnToggleConfirmarContrasena.setImageResource(R.drawable.ic_eye_open)
             } else {
-                // OCULTAR
                 binding.txtConfirmarContrasena.transformationMethod = android.text.method.PasswordTransformationMethod.getInstance()
                 binding.btnToggleConfirmarContrasena.setImageResource(R.drawable.ic_eye_closed)
             }
-
-            // Mantener el cursor al final del texto
             binding.txtConfirmarContrasena.setSelection(binding.txtConfirmarContrasena.text?.length ?: 0)
         }
     }
@@ -99,24 +94,17 @@ class RegistrarseActivity : AppCompatActivity() {
         val colonia = binding.txtColonia.text.toString().trim()
         val alcaldia = binding.txtAlcaldia.text.toString().trim()
         val codigoPostal = binding.txtCodigoPostal.text.toString().trim()
-        val correo = binding.txtCorreo.text.toString().trim()
+
+        // Guardamos el correo en la variable global para onSuccess
+        correoActual = binding.txtCorreo.text.toString().trim()
+
         val contrasena = binding.txtContrasena.text.toString().trim()
         val confirmarContrasena = binding.txtConfirmarContrasena.text.toString().trim()
 
         // --- VALIDACIONES FINALES ---
         if (!ValidationUtils.isNotEmpty(
-                curp,
-                nombre,
-                apellidoP,
-                telefono,
-                calle,
-                numero,
-                colonia,
-                alcaldia,
-                codigoPostal,
-                correo,
-                contrasena,
-                confirmarContrasena
+                curp, nombre, apellidoP, telefono, calle, numero,
+                colonia, alcaldia, codigoPostal, correoActual, contrasena, confirmarContrasena
             )
         ) {
             UiUtils.showToast(this, "Por favor llena todos los campos obligatorios")
@@ -128,25 +116,18 @@ class RegistrarseActivity : AppCompatActivity() {
             return
         }
 
-        if (!ValidationUtils.isValidName(nombre) ||
-            !ValidationUtils.isValidName(apellidoP) ||
-            !ValidationUtils.isValidName(apellidoM)
-        ) {
+        if (!ValidationUtils.isValidName(nombre) || !ValidationUtils.isValidName(apellidoP) || !ValidationUtils.isValidName(apellidoM)) {
             UiUtils.showToast(this, "Nombre o apellidos inválidos")
             return
         }
 
-        if (!ValidationUtils.isValidPhone(telefono) ||
-            (telefonoAlt.isNotEmpty() && !ValidationUtils.isValidPhone(telefonoAlt))
-        ) {
+        if (!ValidationUtils.isValidPhone(telefono) || (telefonoAlt.isNotEmpty() && !ValidationUtils.isValidPhone(telefonoAlt))) {
             UiUtils.showToast(this, "Teléfonos inválidos")
             return
         }
 
-        if (!ValidationUtils.isValidAddressField(calle) ||
-            !ValidationUtils.isValidAddressField(numero) ||
-            !ValidationUtils.isValidAddressField(colonia) ||
-            !ValidationUtils.isValidAddressField(alcaldia)
+        if (!ValidationUtils.isValidAddressField(calle) || !ValidationUtils.isValidAddressField(numero) ||
+            !ValidationUtils.isValidAddressField(colonia) || !ValidationUtils.isValidAddressField(alcaldia)
         ) {
             UiUtils.showToast(this, "Campos de dirección inválidos")
             return
@@ -157,7 +138,7 @@ class RegistrarseActivity : AppCompatActivity() {
             return
         }
 
-        if (!ValidationUtils.isValidEmail(correo)) {
+        if (!ValidationUtils.isValidEmail(correoActual)) {
             UiUtils.showToast(this, "Correo no válido")
             return
         }
@@ -185,75 +166,55 @@ class RegistrarseActivity : AppCompatActivity() {
             colonia = colonia,
             alcaldia = alcaldia,
             codigoPostal = codigoPostal,
-            correo = correo
+            correo = correoActual
         )
 
-        authRepo.registrarUsuario(correo, contrasena, usuario, object : AuthCallback {
-            override fun onSuccess() {
-                // Usuario creado, enviar correo de verificación
-                firebaseAuth.currentUser?.sendEmailVerification()?.addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        UiUtils.mostrarAlerta(
-                            this@RegistrarseActivity,
-                            "Verifica tu correo",
-                            "Se ha enviado un correo de verificación a $correo. Por favor verifica antes de iniciar sesión.",
-                            SweetAlertDialog.WARNING_TYPE
-                        ) {
-                            // Cerrar sesión para obligar a verificar
-                            firebaseAuth.signOut()
-                            startActivity(
-                                Intent(
-                                    this@RegistrarseActivity,
-                                    InicioActivity::class.java
-                                )
-                            )
-                            finish()
-                        }
-                    } else {
-                        UiUtils.showToast(
-                            this@RegistrarseActivity,
-                            "Error al enviar correo de verificación"
-                        )
-                    }
-                }
-            }
+        // 2. ADIÓS AL OBJETO ANÓNIMO: Pasamos 'this' como el Callback
+        authRepo.registrarUsuario(correoActual, contrasena, usuario, this)
+    }
 
-            override fun onError(errorMessage: String) {
-                // TRADUCCIÓN DE ERRORES:
-                val mensajeEspanol = when {
-                    // El error que mencionas: Cuenta duplicada
-                    errorMessage.contains("email address is already in use", ignoreCase = true) ->
-                        "Este correo ya está registrado con otra cuenta. Intenta iniciar sesión."
-
-                    // Error de formato (aunque ya lo validamos, Firebase a veces lo lanza)
-                    errorMessage.contains("email address is badly formatted", ignoreCase = true) ->
-                        "El formato del correo electrónico no es válido."
-
-                    // Error de contraseña débil (por si Firebase tiene reglas distintas)
-                    errorMessage.contains("weak password", ignoreCase = true) ->
-                        "La contraseña es muy débil para los estándares de seguridad."
-
-                    // Error de red
-                    errorMessage.contains("network-request-failed", ignoreCase = true) ->
-                        "Error de conexión. Revisa tu internet e inténtalo de nuevo."
-
-                    // Otros errores
-                    else -> "No se pudo crear la cuenta: $errorMessage"
-                }
-
-                // Mostramos la SweetAlert con el mensaje en español
+    // --- 3. MÉTODOS DE LA INTERFAZ (Ahora pertenecen a la Actividad) ---
+    override fun onSuccess() {
+        firebaseAuth.currentUser?.sendEmailVerification()?.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
                 UiUtils.mostrarAlerta(
-                    this@RegistrarseActivity,
-                    "Error de Registro",
-                    mensajeEspanol,
-                    SweetAlertDialog.ERROR_TYPE
-                )
+                    this,
+                    "Verifica tu correo",
+                    "Se ha enviado un correo de verificación a $correoActual. Por favor verifica antes de iniciar sesión.",
+                    SweetAlertDialog.WARNING_TYPE
+                ) {
+                    firebaseAuth.signOut()
+                    startActivity(Intent(this, InicioActivity::class.java))
+                    finish()
+                }
+            } else {
+                UiUtils.showToast(this, "Error al enviar correo de verificación")
             }
-        })
+        }
+    }
+
+    override fun onError(errorMessage: String) {
+        val mensajeEspanol = when {
+            errorMessage.contains("email address is already in use", ignoreCase = true) ->
+                "Este correo ya está registrado con otra cuenta. Intenta iniciar sesión."
+            errorMessage.contains("email address is badly formatted", ignoreCase = true) ->
+                "El formato del correo electrónico no es válido."
+            errorMessage.contains("weak password", ignoreCase = true) ->
+                "La contraseña es muy débil para los estándares de seguridad."
+            errorMessage.contains("network-request-failed", ignoreCase = true) ->
+                "Error de conexión. Revisa tu internet e inténtalo de nuevo."
+            else -> "No se pudo crear la cuenta: $errorMessage"
+        }
+
+        UiUtils.mostrarAlerta(
+            this,
+            "Error de Registro",
+            mensajeEspanol,
+            SweetAlertDialog.ERROR_TYPE
+        )
     }
 
     private fun validarFormularioCompleto() {
-        // 1. Extraer todos los valores
         val curp = binding.txtCurp.text.toString().trim()
         val nombre = binding.txtNombre.text.toString().trim()
         val apeP = binding.txtApellidoP.text.toString().trim()
@@ -268,26 +229,22 @@ class RegistrarseActivity : AppCompatActivity() {
         val pass = binding.txtContrasena.text.toString()
         val confirm = binding.txtConfirmarContrasena.text.toString()
 
-        // 2. Activar validación visual en los Layouts (Rojo moderno)
         binding.layoutCurp.error = if (!ValidationUtils.isValidCURP(curp)) "CURP no válida" else null
         binding.layoutNombre.error = if (!ValidationUtils.isValidName(nombre)) "Nombre inválido" else null
         binding.layoutApellidoP.error = if (!ValidationUtils.isValidName(apeP)) "Apellido paterno obligatorio" else null
         binding.layoutApellidoM.error = if (!ValidationUtils.isValidName(apeM)) "Apellido materno obligatorio" else null
         binding.layoutTelefono.error = if (!ValidationUtils.isValidPhone(tel)) "Teléfono debe ser de 10 dígitos" else null
 
-        // Dirección
         binding.layoutCalle.error = if (!ValidationUtils.isValidAddressField(calle)) "Calle obligatoria" else null
         binding.layoutNumero.error = if (num.isEmpty()) "Requerido" else null
         binding.layoutColonia.error = if (!ValidationUtils.isValidAddressField(col)) "Colonia obligatoria" else null
         binding.layoutAlcaldia.error = if (!ValidationUtils.isValidAddressField(alc)) "Alcaldía obligatoria" else null
         binding.layoutCodigoPostal.error = if (!ValidationUtils.isValidPostalCode(cp)) "CP de 5 dígitos" else null
 
-        // Seguridad
         binding.layoutCorreo.error = if (!ValidationUtils.isValidEmail(email)) "Correo electrónico inválido" else null
         binding.layoutContrasena.error = if (!ValidationUtils.isStrongPassword(pass)) "Contraseña muy débil" else null
         binding.layoutConfirmarContrasena.error = if (pass != confirm) "Las contraseñas no coinciden" else null
 
-        // 3. Validar Checkbox de Términos (Sweet Alert si no está marcado)
         if (!binding.checkTerminos.isChecked) {
             UiUtils.mostrarAlerta(
                 this,
@@ -298,7 +255,6 @@ class RegistrarseActivity : AppCompatActivity() {
             return
         }
 
-        // 4. Verificación Final: ¿Hay algún error visible?
         val tieneErrores = listOf(
             binding.layoutCurp, binding.layoutNombre, binding.layoutApellidoP,
             binding.layoutApellidoM, binding.layoutTelefono, binding.layoutCalle,
@@ -308,7 +264,7 @@ class RegistrarseActivity : AppCompatActivity() {
         ).any { it.error != null }
 
         if (!tieneErrores) {
-            registrarUsuario() // Procedemos al registro en Firebase
+            registrarUsuario()
         } else {
             UiUtils.mostrarAlerta(
                 this,
@@ -320,9 +276,8 @@ class RegistrarseActivity : AppCompatActivity() {
     }
 
     private fun configurarValidacionesTiempoReal() {
-        // --- DATOS PERSONALES ---
-        binding.txtCurp.addTextChangedListener {
-            val s = it.toString().trim()
+        binding.txtCurp.addCustomTextWatcher { text ->
+            val s = text.trim()
             binding.layoutCurp.error = when {
                 s.isEmpty() -> "Campo obligatorio"
                 s.length < 18 -> "Faltan ${18 - s.length} caracteres"
@@ -331,72 +286,73 @@ class RegistrarseActivity : AppCompatActivity() {
             }
         }
 
-        binding.txtNombre.addTextChangedListener {
-            binding.layoutNombre.error = if (!ValidationUtils.isValidName(it.toString())) "Solo letras (máx 50)" else null
+        binding.txtNombre.addCustomTextWatcher { text ->
+            binding.layoutNombre.error = if (!ValidationUtils.isValidName(text)) "Solo letras (máx 50)" else null
         }
 
-        binding.txtApellidoP.addTextChangedListener {
-            binding.layoutApellidoP.error = if (!ValidationUtils.isValidName(it.toString())) "Solo letras" else null
+        binding.txtApellidoP.addCustomTextWatcher { text ->
+            binding.layoutApellidoP.error = if (!ValidationUtils.isValidName(text)) "Solo letras" else null
         }
 
-        binding.txtTelefono.addTextChangedListener {
-            val s = it.toString()
-            binding.layoutTelefono.error = if (s.length < 10) "Deben ser 10 dígitos" else null
+        binding.txtTelefono.addCustomTextWatcher { text ->
+            binding.layoutTelefono.error = if (text.length < 10) "Deben ser 10 dígitos" else null
         }
 
-        // --- DIRECCIÓN ---
-        binding.txtCalle.addTextChangedListener {
-            binding.layoutCalle.error = if (it.toString().trim().isEmpty()) "Requerido" else null
+        binding.txtCalle.addCustomTextWatcher { text ->
+            binding.layoutCalle.error = if (text.trim().isEmpty()) "Requerido" else null
         }
 
-        binding.txtNumero.addTextChangedListener {
-            // Solo aceptara números, aquí validamos que no esté vacío
-            binding.layoutNumero.error = if (it.toString().isEmpty()) "Requerido" else null
+        binding.txtNumero.addCustomTextWatcher { text ->
+            binding.layoutNumero.error = if (text.isEmpty()) "Requerido" else null
         }
 
-        binding.txtColonia.addTextChangedListener {
-            binding.layoutColonia.error = if (it.toString().trim().isEmpty()) "Requerido" else null
+        binding.txtColonia.addCustomTextWatcher { text ->
+            binding.layoutColonia.error = if (text.trim().isEmpty()) "Requerido" else null
         }
 
-        binding.txtAlcaldia.addTextChangedListener {
-            binding.layoutAlcaldia.error = if (it.toString().trim().isEmpty()) "Requerido" else null
+        binding.txtAlcaldia.addCustomTextWatcher { text ->
+            binding.layoutAlcaldia.error = if (text.trim().isEmpty()) "Requerido" else null
         }
 
-        binding.txtCodigoPostal.addTextChangedListener {
-            val s = it.toString()
-            binding.layoutCodigoPostal.error = if (s.length < 5) "CP inválido (5 dígitos)" else null
+        binding.txtCodigoPostal.addCustomTextWatcher { text ->
+            binding.layoutCodigoPostal.error = if (text.length < 5) "CP inválido (5 dígitos)" else null
         }
 
-
-
-        // --- SEGURIDAD ---
-        binding.txtCorreo.addTextChangedListener {
-            val email = it.toString().trim()
+        binding.txtCorreo.addCustomTextWatcher { text ->
+            val email = text.trim()
             binding.layoutCorreo.error = if (email.isNotEmpty() && !ValidationUtils.isValidEmail(email)) "Formato de correo inválido" else null
         }
 
-        binding.txtContrasena.addTextChangedListener {
-            val s = it.toString()
+        binding.txtContrasena.addCustomTextWatcher { text ->
             binding.layoutContrasena.error = when {
-                s.isEmpty() -> "Campo obligatorio"
-                s.length < 8 -> "Mínimo 8 caracteres"
-                !s.any { c -> c.isUpperCase() } -> "Debe incluir una Mayúscula"
-                !s.any { c -> c.isDigit() } -> "Debe incluir un Número"
-                !s.any { c -> "@#\$%^&+=!¿?*._-".contains(c) } -> "Debe incluir un carácter especial (@#$.-)"
+                text.isEmpty() -> "Campo obligatorio"
+                text.length < 8 -> "Mínimo 8 caracteres"
+                !text.any { c -> c.isUpperCase() } -> "Debe incluir una Mayúscula"
+                !text.any { c -> c.isDigit() } -> "Debe incluir un Número"
+                !text.any { c -> "@#\$%^&+=!¿?*._-".contains(c) } -> "Debe incluir un carácter especial (@#$.-)"
                 else -> null
             }
-            // Re-validar confirmación si ya se había escrito algo
+
             val confirm = binding.txtConfirmarContrasena.text.toString()
             if (confirm.isNotEmpty()) {
-                binding.layoutConfirmarContrasena.error = if (s != confirm) "No coinciden" else null
+                binding.layoutConfirmarContrasena.error = if (text != confirm) "No coinciden" else null
             }
         }
 
-        binding.txtConfirmarContrasena.addTextChangedListener {
-            val s = it.toString()
+        binding.txtConfirmarContrasena.addCustomTextWatcher { text ->
             val pass = binding.txtContrasena.text.toString()
-            binding.layoutConfirmarContrasena.error = if (s != pass) "Las contraseñas no coinciden" else null
+            binding.layoutConfirmarContrasena.error = if (text != pass) "Las contraseñas no coinciden" else null
         }
     }
+} // <-- AQUÍ SE CIERRA LA CLASE
 
+// 4. LA FUNCIÓN DE EXTENSIÓN AHORA VIVE AFUERA DE LA CLASE
+fun android.widget.EditText.addCustomTextWatcher(onTextChanged: (String) -> Unit) {
+    this.addTextChangedListener(object : android.text.TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            onTextChanged(s?.toString() ?: "")
+        }
+        override fun afterTextChanged(s: android.text.Editable?) {}
+    })
 }

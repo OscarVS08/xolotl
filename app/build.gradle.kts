@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     id("com.google.gms.google-services")
+    id("jacoco")
 }
 
 android {
@@ -65,6 +66,31 @@ android {
             }
         }
     }
+}
+
+// Configuración corregida para Kotlin DSL
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("createDebugCoverageReport")
+
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    val fileFilter = listOf("**/R.class", "**/R$*.class", "**/BuildConfig.*", "**/Manifest*.*", "**/*Test*.*")
+
+    val debugTree = fileTree("${layout.buildDirectory.get()}/intermediates/javac/debug/classes") {
+        exclude(fileFilter)
+    }
+    val kotlinTree = fileTree("${layout.buildDirectory.get()}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+
+    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
+    classDirectories.setFrom(files(debugTree, kotlinTree))
+    executionData.setFrom(fileTree(layout.buildDirectory.get()) {
+        include("**/*.ec")
+    })
 }
 
 dependencies {

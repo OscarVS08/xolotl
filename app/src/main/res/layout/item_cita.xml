@@ -11,69 +11,35 @@
     app:strokeWidth="1dp">
 
     <LinearLayout
+        android:id="@+id/layout_contenedor_interno"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="12dp"
         android:background="@drawable/rectangulosesion">
 
-        <TextView
+        <!-- (Tus TextViews anteriores se mantienen igual...) -->
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Mascota" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/white" />
+        <TextView android:id="@+id/txtNombreMascotaCita" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:background="@drawable/campos_circulares" android:padding="8dp" android:text="Nombre" android:textColor="@android:color/black" android:textSize="14sp" android:textStyle="bold" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Servicio" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/white" />
+        <TextView android:id="@+id/txtServicioCita" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:background="@drawable/campos_circulares" android:padding="8dp" android:text="Servicio" android:textColor="@android:color/black" android:textSize="13sp" />
+
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Fecha y hora" android:textSize="11sp" android:textStyle="bold" android:textColor="@color/white" />
+        <TextView android:id="@+id/txtFechaHoraCita" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="12dp" android:background="@drawable/campos_circulares" android:padding="8dp" android:text="Fecha y hora" android:textColor="@android:color/black" android:textSize="12sp" />
+
+        <!-- NUEVO: Checkbox de asistencia -->
+        <CheckBox
+            android:id="@+id/chkAsistencia"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Mascota"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:textColor="@color/white" />
-
-        <TextView
-            android:id="@+id/txtNombreMascotaCita"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/campos_circulares"
-            android:padding="8dp"
-            android:text="Nombre"
-            android:textColor="@android:color/black"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Servicio"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:textColor="@color/white" />
-
-        <TextView
-            android:id="@+id/txtServicioCita"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/campos_circulares"
-            android:padding="8dp"
-            android:text="Servicio"
-            android:textColor="@android:color/black"
-            android:textSize="13sp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Fecha y hora"
-            android:textSize="11sp"
-            android:textStyle="bold"
-            android:textColor="@color/white" />
-
-        <TextView
-            android:id="@+id/txtFechaHoraCita"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_marginBottom="12dp"
-            android:background="@drawable/campos_circulares"
-            android:padding="8dp"
-            android:text="Fecha y hora"
-            android:textColor="@android:color/black"
-            android:textSize="12sp" />
+            android:text="¿Asistí a la cita?"
+            android:textColor="@color/white"
+            android:buttonTint="@color/white"
+            android:paddingStart="8dp"
+            android:checked="false" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -89,8 +55,7 @@
                 android:contentDescription="Editar cita"
                 android:padding="6dp"
                 android:scaleType="centerInside"
-                android:src="@drawable/editar_blanco"
-                />
+                android:src="@drawable/editar_blanco" />
 
             <View
                 android:layout_width="30dp"

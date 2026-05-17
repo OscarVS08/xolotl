@@ -36,10 +36,11 @@ class TerminosActivityUITest {
         // Hacemos clic en el botón de la casita
         onView(withId(R.id.btnBack)).perform(click())
 
-        // Entramos al contexto de la actividad para leer su estado interno
-        scenario.onActivity { activity ->
-            // Verificamos si la bandera de "cerrando" se activó exitosamente
-            assertTrue(activity.isFinishing)
-        }
+        // Espera estratégica post-click
+        Thread.sleep(500)
+
+        // En lugar de intentar entrar a la actividad destruida,
+        // le preguntamos directamente al escenario si el ciclo de vida terminó.
+        org.junit.Assert.assertEquals(Lifecycle.State.DESTROYED, scenario.state)
     }
 }

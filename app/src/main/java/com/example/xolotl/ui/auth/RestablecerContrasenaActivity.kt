@@ -97,4 +97,17 @@ class RestablecerContrasenaActivity : AppCompatActivity() {
             }
         }
     }
+
+    // FUNCIÓN DE EXTENSIÓN PERSONALIZADA (NO-INLINE)
+    // Necesaria en todos los archivos que tengan TextWatchers para evitar Class ID Mismatch en JaCoCo
+    fun android.widget.EditText.addCustomTextWatcher(onTextChanged: (String) -> Unit) {
+        this.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                onTextChanged(s?.toString() ?: "")
+            }
+
+            override fun afterTextChanged(s: android.text.Editable?) {}
+        })
+    }
 }

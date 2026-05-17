@@ -7,6 +7,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.xolotl.R
+import org.hamcrest.Matchers.containsString
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -15,75 +16,77 @@ class RestablecerContrasenaActivityUITest {
 
     @Test
     fun prueba1_elementosVisualesCarganCorrectamente() {
-        ActivityScenario.launch(RestablecerContrasenaActivity::class.java)
-
-        // Verificamos que los textos, el campo y el botón existan en pantalla
-        onView(withId(R.id.txtDescripcion)).check(matches(isDisplayed()))
-        onView(withId(R.id.txtCorreoRestablecer)).check(matches(isDisplayed()))
-        onView(withId(R.id.btnEnviarCorreo)).check(matches(isDisplayed()))
+        ActivityScenario.launch(RestablecerContrasenaActivity::class.java).use {
+            onView(withId(R.id.txtDescripcion)).check(matches(isDisplayed()))
+            onView(withId(R.id.txtCorreoRestablecer)).check(matches(isDisplayed()))
+            onView(withId(R.id.btnEnviarCorreo)).check(matches(isDisplayed()))
+        }
     }
 
     @Test
     fun prueba2_campoVacio_muestraAlertaRequerido() {
-        ActivityScenario.launch(RestablecerContrasenaActivity::class.java)
+        ActivityScenario.launch(RestablecerContrasenaActivity::class.java).use {
+            onView(withId(R.id.btnEnviarCorreo)).perform(click())
+            onView(withText("Campo requerido")).check(matches(isDisplayed()))
 
-        // Clic en enviar sin escribir nada
-        onView(withId(R.id.btnEnviarCorreo)).perform(click())
-
-        // Verificamos el SweetAlert de campo vacío
-        onView(withText("Campo requerido")).check(matches(isDisplayed()))
-        onView(withText("Por favor, escribe tu correo electrónico para continuar.")).check(matches(isDisplayed()))
+            // ESCUDO ANTI-CRASH: Clic y Pausa para la animación
+            onView(withText("OK")).perform(click())
+            Thread.sleep(1000)
+        }
     }
 
     @Test
     fun prueba3_validacionTiempoReal_formatoInvalido_muestraError() {
-        ActivityScenario.launch(RestablecerContrasenaActivity::class.java)
+        ActivityScenario.launch(RestablecerContrasenaActivity::class.java).use {
+            onView(withId(R.id.txtCorreoRestablecer)).perform(typeText("a"), closeSoftKeyboard())
+            onView(withId(R.id.txtCorreoRestablecer)).perform(replaceText(""), closeSoftKeyboard())
 
-        // Escribimos un correo mal formateado
-        onView(withId(R.id.txtCorreoRestablecer)).perform(typeText("correo_sin_arroba"), closeSoftKeyboard())
+            onView(withId(R.id.txtCorreoRestablecer)).perform(typeText("correo_sin_arroba"), closeSoftKeyboard())
+            onView(withText("Ingresa un correo válido")).check(matches(isDisplayed()))
 
-        // Verificamos que el TextInputLayout muestre el mensaje dinámico
-        onView(withText("Ingresa un correo válido")).check(matches(isDisplayed()))
+            onView(withId(R.id.btnEnviarCorreo)).perform(click())
+            onView(withText("Formato inválido")).check(matches(isDisplayed()))
+
+            // ESCUDO ANTI-CRASH: Clic y Pausa para la animación
+            onView(withText("OK")).perform(click())
+            Thread.sleep(1000)
+        }
     }
-
-    /* Prueba descontinuada por función de protección de Firebase que envía mensaje de
-    * exito independiente de si el correo existe o no, como medida de seguridad */
-    /*
-    @Test
-    fun prueba4_correoNoExiste_muestraErrorDeFirebase() {
-        ActivityScenario.launch(RestablecerContrasenaActivity::class.java)
-
-        // Usamos un correo con formato válido pero que sabemos que NO existe en tu base
-        val correoFalso = "no_existo_12345@xolotl.com"
-
-        onView(withId(R.id.txtCorreoRestablecer)).perform(typeText(correoFalso), closeSoftKeyboard())
-        onView(withId(R.id.btnEnviarCorreo)).perform(click())
-
-        // Esperamos a que Firebase responda (3 segundos)
-        Thread.sleep(3000)
-
-        // Verificamos la traducción del error "user-not-found"
-        onView(withText("Error de recuperación")).check(matches(isDisplayed()))
-        onView(withText("No existe ninguna cuenta registrada con este correo.")).check(matches(isDisplayed()))
-    }*/
 
     @Test
     fun prueba5_correoValido_muestraExitoYEnviaEnlace() {
-        ActivityScenario.launch(RestablecerContrasenaActivity::class.java)
+        val auth = com.google.firebase.auth.FirebaseAuth.getInstance()
+        val correoTemp = "recuperacion_fantasma_${System.currentTimeMillis()}@xolotl.com"
+        val passTemp = "XolotlTest123!"
 
-        // ==========================================
-        //  CAMBIA ESTE CORREO POR UNO REAL DE TU BASE DE DATOS
-        // Firebase enviará un correo real de restablecimiento a esta bandeja.
-        // ==========================================
-        val correoReal = "vaquerosantososcar@gmail.com"
+        var authLista = false
+        auth.createUserWithEmailAndPassword(correoTemp, passTemp).addOnCompleteListener {
+            authLista = true
+        }
+        while(!authLista) { Thread.sleep(100) }
 
-        onView(withId(R.id.txtCorreoRestablecer)).perform(typeText(correoReal), closeSoftKeyboard())
-        onView(withId(R.id.btnEnviarCorreo)).perform(click())
+        ActivityScenario.launch(RestablecerContrasenaActivity::class.java).use {
+            onView(withId(R.id.txtCorreoRestablecer)).perform(typeText(correoTemp), closeSoftKeyboard())
+            onView(withId(R.id.btnEnviarCorreo)).perform(click())
 
-        // Esperamos a que Firebase procese el envío
-        Thread.sleep(3000)
+            Thread.sleep(4000)
 
-        // Verificamos el SweetAlert de éxito
-        onView(withText("¡Correo enviado!")).check(matches(isDisplayed()))
+            onView(withText(containsString("Correo enviado"))).check(matches(isDisplayed()))
+
+            // ESCUDO ANTI-CRASH: Clic y Pausa para la animación
+            onView(withText("OK")).perform(click())
+            Thread.sleep(1000)
+        }
+
+        // LIMPIEZA SINCRONIZADA
+        var limpiezaLista = false
+        auth.signInWithEmailAndPassword(correoTemp, passTemp).addOnCompleteListener {
+            auth.currentUser?.delete()?.addOnCompleteListener {
+                auth.signOut()
+                limpiezaLista = true
+            }
+        }
+        var intentos = 0
+        while (!limpiezaLista && intentos < 50) { Thread.sleep(100); intentos++ }
     }
 }

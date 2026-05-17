@@ -9,12 +9,17 @@ import com.example.xolotl.R
 import com.example.xolotl.data.models.Citas
 import android.content.Context
 import android.content.Intent
+import android.widget.CheckBox
 import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import com.example.xolotl.MainActivity
 import com.example.xolotl.utils.UiUtils
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class CitasAdapter(
     private val lista: List<Citas>,
@@ -25,6 +30,7 @@ class CitasAdapter(
         val txtMascota: TextView = view.findViewById(R.id.txtNombreMascotaCita)
         val txtServicio: TextView = view.findViewById(R.id.txtServicioCita)
         val txtFecha: TextView = view.findViewById(R.id.txtFechaHoraCita)
+        val chkAsistencia: CheckBox = view.findViewById(R.id.chkAsistencia)
         val btnEditar: ImageButton = view.findViewById(R.id.btnEditarCita)
         val btnEliminar: ImageButton = view.findViewById(R.id.btnEliminarCita)
     }
@@ -44,7 +50,20 @@ class CitasAdapter(
         //holder.txtMascota.text = cita.ruacMascota
         holder.txtServicio.text = cita.servicio
         holder.txtFecha.text = cita.horario
+        // Lógica de Asistencia por defecto
+        holder.chkAsistencia.isChecked = true
 
+        // Lógica de Color para citas pasadas
+        // Obtenemos el fondo actual del LinearLayout
+        val fondoCita = holder.itemView.findViewById<View>(R.id.layout_contenedor_interno).background
+
+        if (esCitaPasada(cita.horario)) {
+            // Solo cambiamos el color del fondo (tinte), manteniendo los bordes y el padding originales
+            fondoCita.setTint(ContextCompat.getColor(context, R.color.CitaPasada))
+        } else {
+            // Volvemos al color original (debes tener definido el color del rectangulo en colors.xml)
+            fondoCita.setTint(ContextCompat.getColor(context, R.color.rectanguloInicioSesion))
+        }
 
         // Usar el activity para editar citas
         holder.btnEditar.setOnClickListener {
@@ -120,5 +139,16 @@ class CitasAdapter(
                     cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
                 )
             }
+    }
+
+    private fun esCitaPasada(fechaStr: String): Boolean {
+        return try {
+            val sdf = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+            val fechaCita = sdf.parse(fechaStr)
+            val ahora = Date()
+            fechaCita?.before(ahora) ?: false
+        } catch (e: Exception) {
+            false
+        }
     }
 }
