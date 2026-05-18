@@ -247,7 +247,7 @@ class GenerarPdfActivity : AppCompatActivity() {
             addNewPage()
 
             // 1. ENCABEZADO ELEGANTE
-            canvas.drawText("CARNET DE IDENTIDAD CANINA", (pageWidth / 2).toFloat(), y, titlePaint)
+            canvas.drawText("CARNET DE IDENTIDAD", (pageWidth / 2).toFloat(), y, titlePaint)
             y += 10
             val linePaint = Paint().apply { color = mainColor; strokeWidth = 2.5f }
             canvas.drawLine(pageWidth * 0.1f, y, pageWidth * 0.9f, y, linePaint)
