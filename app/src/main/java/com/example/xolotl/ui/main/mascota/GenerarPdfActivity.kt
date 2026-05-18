@@ -160,13 +160,26 @@ class GenerarPdfActivity : AppCompatActivity() {
                 listaCitas.clear()
                 for (d in res) {
                     val cita = d.toObject(Citas::class.java)
-                    // Creamos la copia descifrada
-                    val citaDescifrada = cita.copy(
-                        servicio = EncryptionUtils.decrypt(cita.servicio),
-                        horario = EncryptionUtils.decrypt(cita.horario),
-                        notas = EncryptionUtils.decrypt(cita.notas)
-                    )
-                    listaCitas.add(citaDescifrada)
+                    val horarioDecifrado = EncryptionUtils.decrypt(cita.horario)
+
+                    // 1. Verificamos si la cita ya ocurrió
+                    if (esCitaHistorica(horarioDecifrado)) {
+
+                        // 2. Si ocurrió y ASISTIÓ, la agregamos al PDF
+                        if (cita.asistio) {
+                            val citaDescifrada = cita.copy(
+                                servicio = EncryptionUtils.decrypt(cita.servicio),
+                                horario = horarioDecifrado,
+                                notas = EncryptionUtils.decrypt(cita.notas)
+                            )
+                            listaCitas.add(citaDescifrada)
+                        }
+                        // 3. (OPCIONAL) Si ya ocurrió y no asistió, podríamos borrarla de Firebase aquí mismo
+                        else {
+                            d.reference.delete()
+                        }
+                    }
+                    // Las citas futuras NO entran al PDF, así que las ignoramos
                 }
             }
 
@@ -180,6 +193,19 @@ class GenerarPdfActivity : AppCompatActivity() {
                 txtTelefono.text = EncryptionUtils.decrypt(doc.getString("telefono") ?: "")
                 txtTelAltU.text = EncryptionUtils.decrypt(doc.getString("telefonoAlt") ?: "")
             }
+        }
+    }
+
+    private fun esCitaHistorica(fechaStr: String): Boolean {
+        return try {
+            val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+            val fechaCita = sdf.parse(fechaStr) ?: return false
+            val ahora = java.util.Date()
+
+            // Si la hora actual ya superó la hora de la cita, es histórica
+            ahora.after(fechaCita)
+        } catch (e: Exception) {
+            false
         }
     }
 

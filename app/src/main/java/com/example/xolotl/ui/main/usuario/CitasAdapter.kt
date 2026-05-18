@@ -51,7 +51,24 @@ class CitasAdapter(
         holder.txtServicio.text = cita.servicio
         holder.txtFecha.text = cita.horario
         // Lógica de Asistencia por defecto
-        holder.chkAsistencia.isChecked = true
+        //holder.chkAsistencia.isChecked = true
+
+        // -----------------------------------------------------
+        // LÓGICA DE ASISTENCIA (Con prevención de scroll)
+        // -----------------------------------------------------
+        // 1. Apagamos temporalmente el listener para que el scroll no lance actualizaciones falsas
+        holder.chkAsistencia.setOnCheckedChangeListener(null)
+
+        // 2. Colocamos el valor real que viene de Firebase
+        holder.chkAsistencia.isChecked = cita.asistio
+
+        // 3. Encendemos el listener ahora sí para escuchar al usuario
+        holder.chkAsistencia.setOnCheckedChangeListener { _, isChecked ->
+            // Actualizamos la lista local para que al hacer scroll no se pierda
+            cita.asistio = isChecked
+            // Disparamos la actualización a Firebase
+            actualizarAsistenciaEnFirebase(cita, isChecked)
+        }
 
         // Lógica de Color para citas pasadas
         // Obtenemos el fondo actual del LinearLayout
@@ -150,5 +167,36 @@ class CitasAdapter(
         } catch (e: Exception) {
             false
         }
+    }
+
+    // ========================================================
+    // NUEVA FUNCIÓN: Guarda el estado del check en Firebase
+    // ========================================================
+    private fun actualizarAsistenciaEnFirebase(cita: Citas, asistio: Boolean) {
+        val db = FirebaseFirestore.getInstance()
+        val uid = FirebaseAuth.getInstance().uid ?: return
+
+        db.collection("usuarios")
+            .document(uid)
+            .collection("mascotas")
+            .document(cita.ruacMascota)
+            .collection("citas")
+            .document(cita.idC)
+            .update("asistio", asistio)
+            .addOnSuccessListener {
+                // Se actualizó de fondo silenciosamente. No hace falta molestar al usuario con un Toast.
+            }
+            .addOnFailureListener {
+                // Si falla (ej. sin internet), regresamos el valor visualmente para no mentirle al usuario
+                cita.asistio = !asistio
+                notifyDataSetChanged()
+
+                UiUtils.mostrarAlerta(
+                    context as AppCompatActivity,
+                    "Error de conexión",
+                    "No se pudo guardar la asistencia",
+                    cn.pedant.SweetAlert.SweetAlertDialog.ERROR_TYPE
+                )
+            }
     }
 }

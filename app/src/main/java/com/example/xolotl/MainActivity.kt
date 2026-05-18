@@ -291,13 +291,13 @@ class MainActivity : AppCompatActivity() {
         val db = FirebaseFirestore.getInstance()
 
         listaCitas.clear()
-        listaCitasCompleta.clear() // Limpiamos el respaldo también
+        listaCitasCompleta.clear()
 
         db.collection("usuarios").document(uid).collection("mascotas").get()
             .addOnSuccessListener { mascotas ->
                 if (mascotas.isEmpty) {
                     adapter.notifyDataSetChanged()
-                    evaluarVisibilidadFiltro() // <-- CORRECCIÓN: Oculta el filtro si no hay mascotas
+                    evaluarVisibilidadFiltro()
                     return@addOnSuccessListener
                 }
 
@@ -307,20 +307,37 @@ class MainActivity : AppCompatActivity() {
                     val ruac = mascota.id
                     val nombreMascota = EncryptionUtils.decrypt(mascota.getString("nombre") ?: "")
 
-                    db.collection("usuarios").document(uid).collection("mascotas")
-                        .document(ruac).collection("citas").get()
+                    // Referencia a la colección de citas de esta mascota
+                    val citasRef = db.collection("usuarios").document(uid)
+                        .collection("mascotas").document(ruac)
+                        .collection("citas")
+
+                    citasRef.get()
                         .addOnSuccessListener { citas ->
                             for (doc in citas) {
                                 val servicio = EncryptionUtils.decrypt(doc.getString("servicio") ?: "")
                                 val fecha = EncryptionUtils.decrypt(doc.getString("horario") ?: "")
+                                val asistioFirebase = doc.getBoolean("asistio") ?: true
 
+                                // =======================================================
+                                // NUEVA LÓGICA: ¿Ya pasaron 24 horas desde la cita?
+                                // =======================================================
+                                /*if (haPasadoUnDia(fecha)) {
+                                    // Eliminamos la cita de Firebase permanentemente
+                                    doc.reference.delete()
+                                    // Hacemos "continue" para que NO se agregue a la pantalla
+                                    continue
+                                }*/
+
+                                // Si no ha pasado un día, la mostramos normalmente
                                 val nuevaCita = Citas(
                                     idC = doc.id,
                                     servicio = servicio,
                                     horario = fecha,
                                     notas = "",
                                     ruacMascota = ruac,
-                                    nombreMascota = nombreMascota
+                                    nombreMascota = nombreMascota,
+                                    asistio = asistioFirebase
                                 )
                                 listaCitasCompleta.add(nuevaCita)
                             }
@@ -328,14 +345,13 @@ class MainActivity : AppCompatActivity() {
                             consultasPendientes--
 
                             if (consultasPendientes == 0) {
-                                evaluarVisibilidadFiltro() // <-- CORRECCIÓN: Evalúa cada vez que termina
+                                evaluarVisibilidadFiltro()
                                 actualizarSpinnerMascotas()
                                 aplicarFiltrosYOrden()
                             }
                         }
                         .addOnFailureListener {
                             consultasPendientes--
-                            // Por seguridad, si falla una consulta pero terminan las demás
                             if (consultasPendientes == 0) {
                                 evaluarVisibilidadFiltro()
                                 actualizarSpinnerMascotas()
@@ -344,6 +360,28 @@ class MainActivity : AppCompatActivity() {
                         }
                 }
             }
+    }
+
+    private fun haPasadoUnDia(fechaStr: String): Boolean {
+        return try {
+            val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
+            val fechaCita = sdf.parse(fechaStr) ?: return false
+            val ahora = java.util.Date()
+
+            // Calculamos la diferencia en milisegundos
+            val diferenciaMilisegundos = ahora.time - fechaCita.time
+
+            // 24 horas * 60 min * 60 seg * 1000 milisegundos = 86,400,000 ms
+            val unDiaEnMilisegundos = 24 * 60 * 60 * 1000L
+
+            // Pon el límite a 1 minuto (para hacer la prueba)
+            //val unDiaEnMilisegundos = 1 * 60 * 1000L
+
+            // Si la diferencia es mayor o igual a 24 horas, devuelve true
+            diferenciaMilisegundos >= unDiaEnMilisegundos
+        } catch (e: Exception) {
+            false
+        }
     }
 
     private fun actualizarSpinnerMascotas() {
@@ -405,14 +443,16 @@ class MainActivity : AppCompatActivity() {
     private fun aplicarFiltrosYOrden() {
         val sdf = java.text.SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault())
 
-        // 1. Filtrar por Mascota
+        // 1. Filtrar por Mascota Y ocultar las que ya tienen más de 24 horas
         val listaFiltrada = if (mascotaSeleccionadaFiltro == "Todas" || mascotaSeleccionadaFiltro == "Mascota" || mascotaSeleccionadaFiltro.isEmpty()) {
-            listaCitasCompleta.toMutableList()
+            // Muestra todas las mascotas, pero solo las citas que NO han pasado de 24 hrs
+            listaCitasCompleta.filter { !haPasadoUnDia(it.horario) }.toMutableList()
         } else {
-            listaCitasCompleta.filter { it.nombreMascota == mascotaSeleccionadaFiltro }.toMutableList()
+            // Muestra la mascota seleccionada, pero solo las citas que NO han pasado de 24 hrs
+            listaCitasCompleta.filter { it.nombreMascota == mascotaSeleccionadaFiltro && !haPasadoUnDia(it.horario) }.toMutableList()
         }
 
-        // 2. Ordenar por Fecha (Recuperamos ambas funciones)
+        // 2. Ordenar por Fecha
         if (binding.chipProximas.isChecked) {
             // Ascendente: las fechas más cercanas
             listaFiltrada.sortBy {
